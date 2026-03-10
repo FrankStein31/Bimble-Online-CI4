@@ -36,15 +36,17 @@ $routes->group('', ['filter' => 'auth:siswa'], function ($routes) {
     $routes->get('/registrasi-pembayaran/paket-aktif', 'RegistrasiController::paketAktif');
     $routes->get('/registrasi-pembayaran/transfer-bank', 'RegistrasiController::transferBank');
     $routes->get('/registrasi-pembayaran/history', 'RegistrasiController::history');
+    $routes->get('/rekap-belajar', 'RekkapBelajarController::index');
 });
 // Halaman dashboard - khusus admin
 $routes->group('/dashboard', ['filter' => 'auth:admin'], function ($routes) {
     $routes->get('jadwal', 'JadwalController::index');
     $routes->get('program', 'ProgramController::index');
     $routes->get('rekening', 'RekeningController::index');
-    $routes->get('siswa-ptn', 'SiswaPtnController::index'); // Diubah ke controller baru
+    $routes->get('siswa-ptn', 'SiswaPtnController::index');
     $routes->get('transaksi', 'TransaksiController::transaksi');
     $routes->get('user', 'UserController::index');
+    $routes->get('hasil-belajar', 'HasilBelajarController::index');
 });
 
 // Routes CRUD untuk Siswa PTN
@@ -84,9 +86,20 @@ $routes->group('transaksi', ['filter' => 'auth:admin'], function ($routes) {
     $routes->get('delete/(:num)', 'TransaksiController::delete/$1');
 });
 
-// app/Config/Routes.php
-$routes->group('pengajar', function($routes){
-    $routes->get('dashboard', 'Pengajar::dashboard');     // /pengajar/dashboard
-    $routes->get('kelas',     'Pengajar::kelas');         // /pengajar/kelas
-    $routes->post('absen',    'Pengajar::absen');         // /pengajar/absen (POST)
+// Routes CRUD untuk hasil belajar (admin)
+$routes->group('hasil-belajar', ['filter' => 'auth:admin'], function ($routes) {
+    $routes->post('add', 'HasilBelajarController::add');
+    $routes->post('update/(:num)', 'HasilBelajarController::edit/$1');
+    $routes->get('delete/(:num)', 'HasilBelajarController::delete/$1');
+});
+
+// Routes untuk pengajar
+$routes->group('pengajar', ['filter' => 'auth:pengajar'], function ($routes) {
+    $routes->get('dashboard', 'PengajarController::dashboard');
+    $routes->get('jadwal', 'PengajarController::jadwal');
+    $routes->get('siswa', 'PengajarController::siswa');
+    $routes->get('hasil-belajar', 'PengajarController::hasilBelajar');
+    $routes->post('hasil-belajar/tambah', 'PengajarController::tambahHasil');
+    $routes->post('hasil-belajar/edit/(:num)', 'PengajarController::editHasil/$1');
+    $routes->get('hasil-belajar/hapus/(:num)', 'PengajarController::hapusHasil/$1');
 });

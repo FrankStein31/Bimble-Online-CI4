@@ -755,6 +755,7 @@
             <a href="<?= base_url('dashboard/user') ?>" class="sidebar-link" data-page="user">Kelola User</a>
             <a href="<?= base_url('dashboard/rekening') ?>" class="sidebar-link" data-page="rekening">Kelola Rekening</a>
             <a href="<?= base_url('dashboard/siswa-ptn') ?>" class="sidebar-link" data-page="siswa-ptn">Siswa Diterima</a>
+            <a href="<?= base_url('dashboard/hasil-belajar') ?>" class="sidebar-link" data-page="hasil-belajar">Hasil Belajar</a>
         </nav>
 
         <main class="content">
