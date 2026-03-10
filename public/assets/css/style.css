@@ -1,0 +1,286 @@
+/* Reset dasar */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: sans-serif;
+    line-height: 1.5;
+    color: #333;
+    background-color: #F5F5F5;
+
+}
+
+/* Wadah tengah */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Tombol */
+.btn {
+    display: inline-block;
+    text-decoration: none;
+    padding: 0.5em 1em;
+    border-radius: 10px;
+    text-align: center;
+}
+.btn-primary {
+    background-color: #4CAF50;
+    color: #fff;
+}
+.btn-outline {
+    border: 2px solid #fff;
+    color: #fff;
+    background: transparent;
+}
+
+/* Header */
+.site-header {
+    background-color: #87AFFF;
+    padding: 1em 0;
+}
+.site-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.logo-placeholder {
+    background: #fff;
+    padding: 0.5em 1em;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+}
+.team{
+    margin-bottom: 50px;
+    margin-top: 50px;
+}
+.main-nav a {
+    margin: 0 1em;
+    color: #fff;
+    text-decoration: none;
+}
+.main-nav a:hover {
+    text-decoration: underline;
+}
+
+/* Hero */
+.hero {
+    padding: 2em 0;
+}
+.hero-photo {
+    background: #ddd;
+    height: 500px;
+    border-radius: 8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#666;
+    font-size:1.5em;
+}
+
+/* Section titles */
+h2 {
+    text-align: center;
+    margin-bottom: 1em;
+    color: #597FDA;
+}
+
+/* Grid kartu */
+.cards, .cards-2, .cards-5 {
+    display: flex;
+    gap: 1em;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+.card{
+    background-color: white;  /* Ganti dari #ABB5E5 ke white */
+    padding: 1rem;
+    border-radius: 12px;
+    width: 250px;
+}
+hr {
+    border: 1px solid #000; /* Mengatur border menjadi warna hitam */
+    margin: 20px 0; /* Menambahkan jarak atas dan bawah */
+}
+
+/* Pengaturan kartu 2 kolom */
+.cards-2 .person-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 1rem;
+}
+
+/* Pengaturan kartu 5 kolom */
+.cards-5 .card {
+    flex: 1 1 18%;
+}
+
+/* Kartu umum */
+.card h3 {
+    margin-bottom: 0.5em;
+}
+.card .level {
+    font-weight: bold;
+}
+.card ul {
+    text-align: left;
+    margin: 0.5em 0 1em;
+    padding-left: 1.2em;
+}
+.card ul li {
+    margin-bottom: 0.3em;
+}
+
+/* Foto kecil */
+.photo-sm {
+    background: #ccc;
+    height: 150px;
+    border-radius: 4px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#666;
+    margin-bottom: 0.5em;
+    font-size: 1.1em;
+}
+
+/* Info di bawah foto */
+.card-info strong {
+    display: block;
+    margin-bottom: 0.3em;
+}
+.card-info span {
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Footer */
+.site-footer {
+    background: #597FDA;
+    color: #fff;
+    padding: 2em 0;
+    margin-top: 2em;
+}
+.site-footer h3 {
+    margin-bottom: 0.5em;
+}
+.site-footer p {
+    margin-bottom: 0.3em;
+}
+
+/* Kartu Person */
+.person-card {
+    width: 200px;
+    margin: 2rem auto;
+    font-family: sans-serif;
+}
+
+/* Placeholder foto */
+.person-card .photo {
+    width: 100%;
+    height: 250px;
+    background-color: #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+
+.photo img {
+    width: 100%;
+    height: 100%;
+    object-fit:cover; /* Ini akan membuat gambar mengisi container tanpa distorsi */
+    object-position: center; /* Posisi gambar di tengah */
+}
+.hero-photo img  {
+    width: 100%;
+    height: 100%;
+    object-fit:cover; /* Ini akan membuat gambar mengisi container tanpa distorsi */
+    object-position: center; /* Posisi gambar di tengah */
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+
+/* Info box menempel di bawah foto */
+.person-card .info {
+    background-color: #fff;
+    padding: 1rem;
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: -1.5rem;
+    /* tarik ke atas agar menempel */
+    position: relative;
+    z-index: 1;
+}
+
+.person-card .info strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.person-card .info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+/* jadwal */
+.jadwal {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Untuk menyusun konten secara horizontal */
+    align-items: center; /* Untuk menyusun konten secara vertikal */
+}
+
+
+/* Desain tabel */
+
+
+.schedule-table {
+    width: 80%;
+    max-width: 500px;
+    border-collapse: collapse;
+    background-color: #d3d3d3;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.header-row {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px solid #666;
+}
+
+.header-row th {
+    padding: 15px;
+}
+
+.schedule-row {
+    font-size: 20px;
+    text-align: center;
+}
+
+.schedule-row td {
+    padding: 12px 15px;
+}
+
+.day-column {
+    width: 50%;
+    border-right: 1px solid #666;
+}
+
+.time-column {
+    width: 50%;
+}
