@@ -247,14 +247,14 @@
         <div class="num"><?= $hariAktif ?></div>
         <div class="lbl">Hari Aktif</div>
     </div>
-    <div class="stat-card">
+    <!-- <div class="stat-card">
         <div class="num"><?= $maxCount ?></div>
         <div class="lbl">Slot Terbanyak<br><small><?= $hariTerbanyak ?></small></div>
-    </div>
-    <div class="stat-card">
+    </div> -->
+    <!-- <div class="stat-card">
         <div class="num"><?= 7 - $hariAktif ?></div>
         <div class="lbl">Hari Libur</div>
-    </div>
+    </div> -->
 </div>
 
 <div class="search-bar">
