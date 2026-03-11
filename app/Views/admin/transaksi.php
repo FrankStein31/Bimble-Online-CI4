@@ -420,12 +420,13 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Nama</th>
-                        <th>Kelas</th>
-                        <th>Nomer Telepon</th>
+                        <th>Nama Siswa</th>
+                        <th>Jenjang</th>
                         <th>Paket</th>
+                        <th>Jadwal</th>
+                        <th>Pengajar</th>
                         <th>Tagihan</th>
-                        <th>Bukti Pembayaran</th>
+                        <th>Bukti</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -433,15 +434,35 @@
                 <tbody>
                     <?php if (empty($transaksi)): ?>
                         <tr>
-                            <td colspan="8" style="text-align: center;">Tidak ada data transaksi</td>
+                            <td colspan="9" style="text-align: center;">Tidak ada data transaksi</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($transaksi as $row): ?>
                             <tr>
                                 <td><?= $row['nama'] ?></td>
-                                <td><?= $row['kelas'] ?? '-' ?></td>
-                                <td><?= $row['nomor_hp'] ?? '-' ?></td>
-                                <td><?= $row['nama_program'] ?></td>
+                                <td>
+                                    <?php if (!empty($row['tingkat'])): ?>
+                                        <span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:12px;font-size:12px;"><?= $row['tingkat'] ?></span>
+                                    <?php else: ?>
+                                        <span style="color:#9ca3af;">—</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= $row['nama_program'] ?> <br><small style="color:#6b7280;">Kelas <?= $row['kelas'] ?></small></td>
+                                <td>
+                                    <?php if (!empty($row['hari'])): ?>
+                                        <?= $row['hari'] ?><br>
+                                        <small style="color:#6b7280;"><?= substr($row['jam_mulai'],0,5) ?>–<?= substr($row['jam_selesai'],0,5) ?></small>
+                                    <?php else: ?>
+                                        <span style="color:#9ca3af;">—</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($row['nama_pengajar'])): ?>
+                                        <?= $row['nama_pengajar'] ?>
+                                    <?php else: ?>
+                                        <span style="color:#f59e0b;font-size:12px;">Belum assigned</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>Rp <?= number_format($row['tagihan'], 0, ',', '.') ?></td>
                                 <td>
                                     <?php if ($row['photo_bukti']): ?>
@@ -452,11 +473,11 @@
                                 </td>
                                 <td>
                                     <?php if ($row['status'] == 'lunas'): ?>
-                                        <span class="status-lunas">Lunas</span>
+                                        <span class="status-lunas">✅ Lunas</span>
                                     <?php elseif ($row['status'] == 'pending'): ?>
-                                        <span class="status-belum">Pending</span>
+                                        <span class="status-belum">⏳ Pending</span>
                                     <?php else: ?>
-                                        <span class="status-belum">Ditolak</span>
+                                        <span class="status-belum">❌ Ditolak</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -473,7 +494,6 @@
     </div>
 
     <!-- Add Payment Modal -->
-    <!-- Di bagian modal tambah transaksi -->
     <div id="add-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -481,62 +501,57 @@
                 <a href="#" class="close-modal">&times;</a>
             </div>
             <form action="<?= base_url('transaksi/add') ?>" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="action" value="add">
-
+                <?= csrf_field() ?>
                 <div class="form-group">
-                    <label for="user_id">Nama Siswa</label>
-                    <select name="user_id" id="user_id" class="form-select" required>
+                    <label>Nama Siswa</label>
+                    <select name="user_id" id="add-user_id" class="form-select" required>
                         <option value="">Pilih Siswa</option>
                         <?php foreach ($siswa as $s): ?>
-                            <option value="<?= $s['user_id'] ?>"
-                                data-telepon="<?= $s['nomor_hp'] ?>">
-                                <?= $s['nama'] ?> - <?= $s['nomor_hp'] ?>
+                            <option value="<?= $s['user_id'] ?>"><?= $s['nama'] ?> - <?= $s['nomor_hp'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Program Bimbel</label>
+                    <select name="program_id" id="add-program_id" class="form-select" required>
+                        <option value="">Pilih Program</option>
+                        <?php foreach ($program as $p): ?>
+                            <option value="<?= $p['program_id'] ?>" data-harga="<?= $p['harga'] ?>">
+                                <?= $p['nama_program'] ?> - <?= $p['tingkat'] ?> Kelas <?= $p['kelas'] ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-
                 <div class="form-group">
-                    <label for="kelas">Kelas</label>
-                    <input type="text" id="kelas" name="kelas" class="form-control" placeholder="Contoh: 10 SMA">
-                </div>
-
-                <div class="form-group">
-                    <label for="telepon">Nomor Telepon</label>
-                    <input type="text" id="telepon" name="telepon" class="form-control" placeholder="Contoh: 08123456789" readonly>
-                </div>
-
-                <!-- Bagian lainnya tetap sama -->
-                <div class="form-group">
-                    <label for="program_id">Program Bimbel</label>
-                    <select name="program_id" id="program_id" class="form-select" required>
-                        <option value="">Pilih Program</option>
-                        <?php foreach ($program as $p): ?>
-                            <option value="<?= $p['program_id'] ?>" data-harga="<?= $p['harga'] ?>"><?= $p['nama_program'] ?> - <?= $p['tingkat'] ?> Kelas <?= $p['kelas'] ?></option>
+                    <label>Jadwal</label>
+                    <select name="jadwal_id" class="form-select">
+                        <option value="">Pilih Jadwal</option>
+                        <?php foreach ($jadwal as $j): ?>
+                            <option value="<?= $j['jadwal_id'] ?>">
+                                <?= $j['hari'] ?> | <?= substr($j['jam_mulai'],0,5) ?> - <?= substr($j['jam_selesai'],0,5) ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-
                 <div class="form-group">
-                    <label for="tagihan">Tagihan</label>
-                    <input type="text" id="tagihan" name="tagihan" class="form-control" placeholder="Contoh: 200000">
+                    <label>Tagihan</label>
+                    <input type="number" id="add-tagihan" name="tagihan" class="form-control" placeholder="Rp">
                 </div>
-
                 <div class="form-group">
-                    <label for="photo_bukti">Bukti Pembayaran</label>
-                    <input type="file" id="photo_bukti" name="photo_bukti" class="form-control-file" accept="image/*">
+                    <label>Bukti Pembayaran</label>
+                    <input type="file" name="photo_bukti" class="form-control-file" accept="image/*">
                 </div>
-
                 <div class="form-group">
-                    <label for="status">Status</label>
-                    <select id="status" name="status" class="form-select" required>
-                        <option value="">Pilih Status</option>
+                    <label>Status</label>
+                    <select name="status" class="form-select" required>
                         <option value="pending">Pending</option>
                         <option value="lunas">Lunas</option>
                         <option value="ditolak">Ditolak</option>
                     </select>
                 </div>
-
+                <p style="font-size:12px;color:#6b7280;margin-top:-8px;">
+                    ℹ️ Guru akan otomatis di-assign saat status diset ke <strong>Lunas</strong>.
+                </p>
                 <div class="form-buttons">
                     <a href="#" class="btn btn-gray">Batal</a>
                     <button type="submit" class="btn btn-primary">Simpan</button>
@@ -545,17 +560,13 @@
         </div>
     </div>
 
-    <!-- Script untuk autofill -->
-
 
     <!-- Edit Payment Modal-->
 
     <?php foreach ($transaksi as $row): ?>
         <div id="edit-modal-<?= $row['transaksi_id'] ?>" class="modal edit-modal">
             <style>
-                #edit-modal-<?= $row['transaksi_id'] ?>:target {
-                    display: flex;
-                }
+                #edit-modal-<?= $row['transaksi_id'] ?>:target { display: flex; }
             </style>
             <div class="modal-content">
                 <div class="modal-header">
@@ -563,55 +574,76 @@
                     <a href="#" class="close-modal">&times;</a>
                 </div>
                 <form action="<?= base_url('transaksi/update/' . $row['transaksi_id']) ?>" method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="action" value="edit">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="transaksi_id" value="<?= $row['transaksi_id'] ?>">
 
                     <div class="form-group">
-                        <label for="edit-user-<?= $row['transaksi_id'] ?>">Nama Siswa</label>
-                        <select name="user_id" id="edit-user-<?= $row['transaksi_id'] ?>" class="form-select" required>
+                        <label>Nama Siswa</label>
+                        <select name="user_id" class="form-select" required>
                             <option value="">Pilih Siswa</option>
                             <?php foreach ($siswa as $s): ?>
-                                <option value="<?= $s['user_id'] ?>" <?= ($row['user_id'] == $s['user_id']) ? 'selected' : '' ?>><?= $s['nama'] ?> - <?= $s['nomor_hp'] ?></option>
+                                <option value="<?= $s['user_id'] ?>" <?= ($row['user_id'] == $s['user_id']) ? 'selected' : '' ?>>
+                                    <?= $s['nama'] ?> - <?= $s['nomor_hp'] ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="edit-program-<?= $row['transaksi_id'] ?>">Program Bimbel</label>
-                        <select name="program_id" id="edit-program-<?= $row['transaksi_id'] ?>" class="form-select" required>
+                        <label>Program Bimbel</label>
+                        <select name="program_id" class="form-select" required>
                             <option value="">Pilih Program</option>
                             <?php foreach ($program as $p): ?>
-                                <option value="<?= $p['program_id'] ?>" data-harga="<?= $p['harga'] ?>" <?= ($row['program_id'] == $p['program_id']) ? 'selected' : '' ?>><?= $p['nama_program'] ?> - <?= $p['tingkat'] ?> Kelas <?= $p['kelas'] ?></option>
+                                <option value="<?= $p['program_id'] ?>" data-harga="<?= $p['harga'] ?>"
+                                    <?= ($row['program_id'] == $p['program_id']) ? 'selected' : '' ?>>
+                                    <?= $p['nama_program'] ?> - <?= $p['tingkat'] ?> Kelas <?= $p['kelas'] ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="edit-tagihan-<?= $row['transaksi_id'] ?>">Tagihan</label>
-                        <input type="number" name="tagihan" id="edit-tagihan-<?= $row['transaksi_id'] ?>" class="form-control" value="<?= $row['tagihan'] ?>" required>
+                        <label>Jadwal</label>
+                        <select name="jadwal_id" class="form-select">
+                            <option value="">Pilih Jadwal</option>
+                            <?php foreach ($jadwal as $j): ?>
+                                <option value="<?= $j['jadwal_id'] ?>"
+                                    <?= ($row['jadwal_id'] == $j['jadwal_id']) ? 'selected' : '' ?>>
+                                    <?= $j['hari'] ?> | <?= substr($j['jam_mulai'],0,5) ?> - <?= substr($j['jam_selesai'],0,5) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="edit-photo-<?= $row['transaksi_id'] ?>">Bukti Pembayaran</label>
+                        <label>Tagihan</label>
+                        <input type="number" name="tagihan" class="form-control" value="<?= $row['tagihan'] ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bukti Pembayaran</label>
                         <?php if ($row['photo_bukti']): ?>
                             <div>
-                                <img src="<?= base_url('uploads/bukti_pembayaran/' . $row['photo_bukti']) ?>" alt="Bukti Pembayaran" style="max-width: 200px; margin-bottom: 10px;">
-                                <p><small>File saat ini: <?= $row['photo_bukti'] ?></small></p>
+                                <img src="<?= base_url('uploads/bukti_pembayaran/' . $row['photo_bukti']) ?>" alt="Bukti" style="max-width: 200px; margin-bottom: 10px; border-radius:8px;">
                             </div>
                         <?php endif; ?>
-                        <input type="file" name="photo_bukti" id="edit-photo-<?= $row['transaksi_id'] ?>" class="form-control-file" accept="image/*">
-                        <small class="form-text text-muted">Biarkan kosong jika tidak ingin mengubah bukti pembayaran.</small>
+                        <input type="file" name="photo_bukti" class="form-control-file" accept="image/*">
+                        <small class="form-text text-muted">Kosongkan jika tidak ingin mengubah bukti.</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="edit-status-<?= $row['transaksi_id'] ?>">Status</label>
-                        <select name="status" id="edit-status-<?= $row['transaksi_id'] ?>" class="form-select" required>
-                            <option value="">Pilih Status</option>
+                        <label>Status</label>
+                        <select name="status" class="form-select" required>
                             <option value="pending" <?= ($row['status'] == 'pending') ? 'selected' : '' ?>>Pending</option>
                             <option value="lunas" <?= ($row['status'] == 'lunas') ? 'selected' : '' ?>>Lunas</option>
                             <option value="ditolak" <?= ($row['status'] == 'ditolak') ? 'selected' : '' ?>>Ditolak</option>
                         </select>
                     </div>
+                    <?php if (!empty($row['nama_pengajar'])): ?>
+                        <p style="font-size:12px;color:#059669;">✅ Guru: <strong><?= $row['nama_pengajar'] ?></strong></p>
+                    <?php else: ?>
+                        <p style="font-size:12px;color:#6b7280;">ℹ️ Guru otomatis di-assign saat status <strong>Lunas</strong>.</p>
+                    <?php endif; ?>
 
                     <div class="form-buttons">
                         <a href="#" class="btn btn-gray">Batal</a>

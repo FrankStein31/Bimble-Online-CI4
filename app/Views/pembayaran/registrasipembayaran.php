@@ -355,16 +355,20 @@ select.input-field:focus {
 </style>
 <section class="containter jadwal-pembayaran">
     <form class="form-container" action="<?= base_url('registrasi-pembayaran/submit') ?>" method="post" enctype="multipart/form-data">
-        <?php if (session()->getFlashdata('error')): ?>
-            <div class="alert alert-danger">
-                <?= session()->getFlashdata('error') ?>
-            </div>
-        <?php endif; ?>
+        <h4 style="margin-top:0;margin-bottom:20px;color:#2d3748;font-size:1.2rem;font-weight:700;">
+            📚 Daftar Program Bimbel
+            <?php if (session()->get('tingkat')): ?>
+                <span style="font-size:0.8rem;background:#667eea;color:white;padding:3px 10px;border-radius:20px;margin-left:8px;">
+                    Jenjang <?= session()->get('tingkat') ?>
+                </span>
+            <?php endif; ?>
+        </h4>
 
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
+        <?php endif; ?>
         <?php if (session()->getFlashdata('success')): ?>
-            <div class="alert alert-success">
-                <?= session()->getFlashdata('success') ?>
-            </div>
+            <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
         <?php endif; ?>
 
         <!-- Nama siswa otomatis terisi -->
@@ -373,23 +377,46 @@ select.input-field:focus {
         <!-- Nomor telepon otomatis terisi -->
         <input type="text" class="input-field" name="nomor_hp" value="<?= session()->get('nomor_hp') ?>" readonly placeholder="No Telp">
 
-        <!-- Pilihan program bimbel -->
+        <!-- Pilihan program bimbel (sudah difilter sesuai tingkat siswa) -->
         <select name="program_id" id="program_id" class="input-field" required>
-            <option value="">Pilih Program Bimbel</option>
+            <option value="">-- Pilih Program Bimbel --</option>
             <?php foreach ($program as $p): ?>
                 <option value="<?= $p['program_id'] ?>" data-harga="<?= $p['harga'] ?>">
-                    <?= $p['nama_program'] ?> - <?= $p['tingkat'] ?> Kelas <?= $p['kelas'] ?> (Rp <?= number_format($p['harga'], 0, ',', '.') ?>)
+                    <?= $p['nama_program'] ?> - Kelas <?= $p['kelas'] ?>
+                    (Rp <?= number_format($p['harga'], 0, ',', '.') ?>)
+                </option>
+            <?php endforeach; ?>
+        </select>
+
+        <!-- Pilihan jadwal -->
+        <select name="jadwal_id" id="jadwal_id" class="input-field" required>
+            <option value="">-- Pilih Jadwal --</option>
+            <?php foreach ($jadwal as $j): ?>
+                <option value="<?= $j['jadwal_id'] ?>">
+                    <?= $j['hari'] ?> | <?= substr($j['jam_mulai'], 0, 5) ?> - <?= substr($j['jam_selesai'], 0, 5) ?>
                 </option>
             <?php endforeach; ?>
         </select>
 
         <!-- Field harga otomatis terisi -->
-        <input type="number" name="tagihan" id="tagihan" class="input-field" placeholder="Tagihan" readonly>
+        <input type="number" name="tagihan" id="tagihan" class="input-field" placeholder="Tagihan (otomatis)" readonly>
+
+        <!-- Info rekening bank -->
+        <?php if (!empty($rekening)): ?>
+        <div style="background:#f0f9ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;">
+            <strong style="color:#1d4ed8;">💳 Transfer ke:</strong>
+            <?php foreach ($rekening as $rek): ?>
+                <div style="margin-top:6px;color:#1e40af;">
+                    <?= $rek['bank'] ?> — <?= $rek['no_rek'] ?> a.n. <strong><?= $rek['nama'] ?></strong>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
 
         <!-- Upload bukti pembayaran -->
-        <label for="bukti_pembayaran" class="file-upload">
+        <label for="bukti_pembayaran" class="file-upload" id="file-upload-label">
             <input type="file" name="photo_bukti" id="bukti_pembayaran" style="display:none" accept="image/*" required>
-            <span class="file-upload-text" id="file-name">Bukti Pembayaran</span>
+            <span class="file-upload-text" id="file-name">📷 Upload Bukti Pembayaran</span>
         </label>
 
         <div class="button-container">
@@ -401,29 +428,25 @@ select.input-field:focus {
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Auto-fill tagihan berdasarkan program
         const programSelect = document.getElementById('program_id');
-        const tagihanInput = document.getElementById('tagihan');
+        const tagihanInput  = document.getElementById('tagihan');
 
         programSelect.addEventListener('change', function() {
-            const selectedOption = programSelect.options[programSelect.selectedIndex];
-
-            if (selectedOption.value !== "") {
-                tagihanInput.value = selectedOption.getAttribute('data-harga') || '';
-            } else {
-                tagihanInput.value = '';
-            }
+            const opt = programSelect.options[programSelect.selectedIndex];
+            tagihanInput.value = opt.value ? (opt.getAttribute('data-harga') || '') : '';
         });
 
-        // Tampilkan nama file yang dipilih
-        const fileInput = document.getElementById('bukti_pembayaran');
-        const fileName = document.getElementById('file-name');
+        const fileInput      = document.getElementById('bukti_pembayaran');
+        const fileName       = document.getElementById('file-name');
+        const fileUploadLabel = document.getElementById('file-upload-label');
 
         fileInput.addEventListener('change', function() {
             if (fileInput.files.length > 0) {
-                fileName.textContent = 'File dipilih: ' + fileInput.files[0].name;
+                fileName.textContent = '✅ ' + fileInput.files[0].name;
+                fileUploadLabel.classList.add('has-file');
             } else {
-                fileName.textContent = 'Bukti Pembayaran';
+                fileName.textContent = '📷 Upload Bukti Pembayaran';
+                fileUploadLabel.classList.remove('has-file');
             }
         });
     });

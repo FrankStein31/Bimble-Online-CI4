@@ -51,12 +51,14 @@ class AuthController extends Controller
         if ($user && password_verify($password, $user['password'])) {
             // Set session data
             $sessionData = [
-                'user_id' => $user['user_id'],
-                'nama' => $user['nama'],
-                'email' => $user['email'],
-                'role' => $user['role'],
+                'user_id'  => $user['user_id'],
+                'nama'     => $user['nama'],
+                'email'    => $user['email'],
+                'role'     => $user['role'],
                 'nomor_hp' => $user['nomor_hp'],
-                'photo' => $user['photo'] ?? null,
+                'photo'    => $user['photo'] ?? null,
+                'tingkat'  => $user['tingkat'] ?? null,
+                'jabatan'  => $user['jabatan'] ?? null,
                 'logged_in' => true
             ];
             session()->set($sessionData);
@@ -106,20 +108,22 @@ class AuthController extends Controller
 
         // Siapkan data
         $data = [
-            'nama' => $this->request->getPost('nama'),
-            'email' => $this->request->getPost('email'),
+            'nama'     => $this->request->getPost('nama'),
+            'email'    => $this->request->getPost('email'),
             'nomor_hp' => $this->request->getPost('nomor_hp'),
             'password' => $this->request->getPost('password'),
-            'role' => 'siswa' // Default role siswa
+            'role'     => 'siswa', // Default role siswa
+            'tingkat'  => $this->request->getPost('tingkat'),
         ];
 
         // Validasi
         $rules = [
-            'nama' => 'required|min_length[3]|max_length[255]',
-            'email' => 'required|valid_email|is_unique[user.email]',
-            'nomor_hp' => 'required|min_length[10]|max_length[20]',
-            'password' => 'required|min_length[8]',
-            'confirm_password' => 'required|matches[password]'
+            'nama'             => 'required|min_length[3]|max_length[255]',
+            'email'            => 'required|valid_email|is_unique[user.email]',
+            'nomor_hp'         => 'required|min_length[10]|max_length[20]',
+            'password'         => 'required|min_length[8]',
+            'confirm_password' => 'required|matches[password]',
+            'tingkat'          => 'required|in_list[SD,SMP,SMA]',
         ];
 
         if (!$this->validate($rules)) {

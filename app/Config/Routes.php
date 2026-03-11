@@ -47,6 +47,8 @@ $routes->group('/dashboard', ['filter' => 'auth:admin'], function ($routes) {
     $routes->get('transaksi', 'TransaksiController::transaksi');
     $routes->get('user', 'UserController::index');
     $routes->get('hasil-belajar', 'HasilBelajarController::index');
+    $routes->get('laporan', 'LaporanController::index');
+    $routes->get('laporan/cetak', 'LaporanController::cetak');
 });
 
 // Routes CRUD untuk Siswa PTN

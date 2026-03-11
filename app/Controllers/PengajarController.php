@@ -7,6 +7,7 @@ use App\Models\TransaksiModel;
 use App\Models\JadwalModel;
 use App\Models\ProgramBimbelModel;
 use App\Models\UserModel;
+use App\Models\KelasBimbelModel;
 
 class PengajarController extends BaseController
 {
@@ -15,6 +16,7 @@ class PengajarController extends BaseController
     protected $jadwalModel;
     protected $programModel;
     protected $userModel;
+    protected $kelasModel;
 
     public function __construct()
     {
@@ -23,27 +25,33 @@ class PengajarController extends BaseController
         $this->jadwalModel       = new JadwalModel();
         $this->programModel      = new ProgramBimbelModel();
         $this->userModel         = new UserModel();
+        $this->kelasModel        = new KelasBimbelModel();
     }
 
     public function dashboard()
     {
         $pengajarId = session()->get('user_id');
 
-        $totalSiswa  = count($this->getSiswaSaya($pengajarId));
-        $totalHasil  = count($this->hasilBelajarModel->where('pengajar_id', $pengajarId)->findAll());
-        $jadwal      = $this->jadwalModel->findAll();
+        // Kelas yang dipegang pengajar ini
+        $kelasList  = $this->kelasModel->getKelasByPengajar($pengajarId);
+        $totalSiswa = 0;
+        foreach ($kelasList as $k) {
+            $totalSiswa += (int) $k['terisi'];
+        }
+        $totalHasil = count($this->hasilBelajarModel->where('pengajar_id', $pengajarId)->findAll());
 
         return view('pengajar/dashboard', [
             'totalSiswa' => $totalSiswa,
             'totalHasil' => $totalHasil,
-            'jadwal'     => $jadwal,
+            'kelasList'  => $kelasList,
         ]);
     }
 
     public function jadwal()
     {
-        $jadwal = $this->jadwalModel->orderBy('hari', 'ASC')->findAll();
-        return view('pengajar/jadwal', ['jadwal' => $jadwal]);
+        $pengajarId = session()->get('user_id');
+        $kelasList  = $this->kelasModel->getKelasByPengajar($pengajarId);
+        return view('pengajar/jadwal', ['kelasList' => $kelasList]);
     }
 
     public function siswa()
@@ -126,15 +134,26 @@ class PengajarController extends BaseController
         return redirect()->to('/pengajar/hasil-belajar')->with('success', 'Hasil belajar berhasil dihapus.');
     }
 
-    private function getSiswaSaya($pengajarId)
+    /**
+     * Ambil daftar siswa yang di-assign ke pengajar ini (via kelas_bimbel).
+     */
+    private function getSiswaSaya(int $pengajarId): array
     {
         $db = \Config\Database::connect();
         return $db->table('transaksi')
-            ->select('user.user_id, user.nama, user.nomor_hp, user.email, user.photo, program_bimbel.nama_program, program_bimbel.tingkat, program_bimbel.kelas, transaksi.status')
+            ->select('user.user_id, user.nama, user.nomor_hp, user.email, user.photo, user.tingkat,
+                      program_bimbel.nama_program, program_bimbel.tingkat as tingkat_program, program_bimbel.kelas,
+                      jadwal.hari, jadwal.jam_mulai, jadwal.jam_selesai,
+                      transaksi.status, transaksi.transaksi_id')
             ->join('user', 'user.user_id = transaksi.user_id')
             ->join('program_bimbel', 'program_bimbel.program_id = transaksi.program_id')
+            ->join('jadwal', 'jadwal.jadwal_id = transaksi.jadwal_id', 'left')
+            ->where('transaksi.pengajar_id', $pengajarId)
             ->where('transaksi.status', 'lunas')
-            ->groupBy('user.user_id, user.nama, user.nomor_hp, user.email, user.photo, program_bimbel.nama_program, program_bimbel.tingkat, program_bimbel.kelas, transaksi.status')
+            ->groupBy('user.user_id, user.nama, user.nomor_hp, user.email, user.photo, user.tingkat,
+                       program_bimbel.nama_program, program_bimbel.tingkat, program_bimbel.kelas,
+                       jadwal.hari, jadwal.jam_mulai, jadwal.jam_selesai,
+                       transaksi.status, transaksi.transaksi_id')
             ->get()
             ->getResultArray();
     }

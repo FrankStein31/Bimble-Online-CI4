@@ -8,63 +8,86 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
+        // Disable FK check dan update data user yang ada, atau insert yang belum ada
+        $this->db->query('SET FOREIGN_KEY_CHECKS = 0');
+        $this->db->table('user')->truncate();
+        $this->db->query('SET FOREIGN_KEY_CHECKS = 1');
+
         $data = [
             [
-                'nama' => 'Administrator',
-                'email' => 'admin@gmail.com',
+                'nama'     => 'Administrator',
+                'email'    => 'admin@gmail.com',
                 'nomor_hp' => '081234567890',
-                'role' => 'admin',
+                'role'     => 'admin',
                 'password' => password_hash('admin123', PASSWORD_DEFAULT),
-                'photo' => null
+                'photo'    => null,
+                'tingkat'  => null,
+                'jabatan'  => null,
             ],
+            // Siswa SD
             [
-                'nama' => 'siswa',
-                'email' => 'siswa@gmail.com',
+                'nama'     => 'Andi Setiawan',
+                'email'    => 'siswa@gmail.com',
                 'nomor_hp' => '081234567891',
-                'role' => 'siswa',
+                'role'     => 'siswa',
                 'password' => password_hash('siswa123', PASSWORD_DEFAULT),
-                'photo' => null
+                'photo'    => null,
+                'tingkat'  => 'SD',
+                'jabatan'  => null,
             ],
             [
-                'nama' => 'Budi Santoso',
-                'email' => 'budi@gmail.com',
-                'nomor_hp' => '081234567891',
-                'role' => 'siswa',
-                'password' => password_hash('password123', PASSWORD_DEFAULT),
-                'photo' => null
-            ],
-            [
-                'nama' => 'Siti Aminah',
-                'email' => 'siti@gmail.com',
+                'nama'     => 'Budi Santoso',
+                'email'    => 'budi@gmail.com',
                 'nomor_hp' => '081234567892',
-                'role' => 'siswa',
+                'role'     => 'siswa',
                 'password' => password_hash('password123', PASSWORD_DEFAULT),
-                'photo' => null
+                'photo'    => null,
+                'tingkat'  => 'SMP',
+                'jabatan'  => null,
             ],
             [
-                'nama' => 'Ahmad Rahman',
-                'email' => 'ahmad@gmail.com',
+                'nama'     => 'Siti Aminah',
+                'email'    => 'siti@gmail.com',
                 'nomor_hp' => '081234567893',
-                'role' => 'pengajar',
+                'role'     => 'siswa',
                 'password' => password_hash('password123', PASSWORD_DEFAULT),
-                'photo' => null
+                'photo'    => null,
+                'tingkat'  => 'SMA',
+                'jabatan'  => null,
             ],
+            // Pengajar SD
             [
-                'nama' => 'Dewi Sartika',
-                'email' => 'dewi@gmail.com',
+                'nama'     => 'Ahmad Rahman',
+                'email'    => 'ahmad@gmail.com',
                 'nomor_hp' => '081234567894',
-                'role' => 'pengajar',
+                'role'     => 'pengajar',
                 'password' => password_hash('password123', PASSWORD_DEFAULT),
-                'photo' => null
+                'photo'    => null,
+                'tingkat'  => null,
+                'jabatan'  => 'SD',
             ],
+            // Pengajar SMP
             [
-                'nama' => 'Rini Pratiwi',
-                'email' => 'rini@gmail.com',
+                'nama'     => 'Dewi Sartika',
+                'email'    => 'dewi@gmail.com',
                 'nomor_hp' => '081234567895',
-                'role' => 'siswa',
+                'role'     => 'pengajar',
                 'password' => password_hash('password123', PASSWORD_DEFAULT),
-                'photo' => null
-            ]
+                'photo'    => null,
+                'tingkat'  => null,
+                'jabatan'  => 'SMP',
+            ],
+            // Pengajar SMA
+            [
+                'nama'     => 'Rini Pratiwi',
+                'email'    => 'rini@gmail.com',
+                'nomor_hp' => '081234567896',
+                'role'     => 'pengajar',
+                'password' => password_hash('password123', PASSWORD_DEFAULT),
+                'photo'    => null,
+                'tingkat'  => null,
+                'jabatan'  => 'SMA',
+            ],
         ];
 
         $this->db->table('user')->insertBatch($data);

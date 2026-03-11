@@ -291,8 +291,10 @@ td:nth-child(3) {
     td:nth-child(1):before { content: "Tanggal:"; }
     td:nth-child(2):before { content: "Program:"; }
     td:nth-child(3):before { content: "Tingkat:"; }
-    td:nth-child(4):before { content: "Tagihan:"; }
-    td:nth-child(5):before { content: "Status:"; }
+    td:nth-child(4):before { content: "Jadwal:"; }
+    td:nth-child(5):before { content: "Pengajar:"; }
+    td:nth-child(6):before { content: "Tagihan:"; }
+    td:nth-child(7):before { content: "Status:"; }
     
     .status-badge {
         margin-left: auto;
@@ -345,6 +347,8 @@ tbody tr:nth-child(5) { animation-delay: 0.5s; }
                         <th>Tanggal</th>
                         <th>Program</th>
                         <th>Tingkat/Kelas</th>
+                        <th>Jadwal</th>
+                        <th>Pengajar</th>
                         <th>Tagihan</th>
                         <th>Status</th>
                     </tr>
@@ -353,8 +357,25 @@ tbody tr:nth-child(5) { animation-delay: 0.5s; }
                     <?php foreach ($transaksi as $row): ?>
                         <tr>
                             <td class="date-col"><?= date('d-m-Y', strtotime($row['created_at'])) ?></td>
-                            <td><?= $row['nama_program'] ?></td>
-                            <td><?= $row['tingkat'] ?> <?= $row['kelas'] ?></td>
+                            <td><?= esc($row['nama_program']) ?></td>
+                            <td><?= esc($row['tingkat']) ?> <?= esc($row['kelas']) ?></td>
+                            <td>
+                                <?php if (!empty($row['hari'])): ?>
+                                    <?= esc($row['hari']) ?>
+                                    <?php if (!empty($row['jam_mulai'])): ?>
+                                        <br><small style="color:#718096;"><?= substr($row['jam_mulai'],0,5) ?> – <?= substr($row['jam_selesai'],0,5) ?></small>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span style="color:#a0aec0;">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($row['nama_pengajar'])): ?>
+                                    <span style="color:#2f855a;font-weight:600;"><?= esc($row['nama_pengajar']) ?></span>
+                                <?php else: ?>
+                                    <span style="color:#b7791f;font-style:italic;">Menunggu konfirmasi</span>
+                                <?php endif; ?>
+                            </td>
                             <td>Rp <?= number_format($row['tagihan'], 0, ',', '.') ?></td>
                             <td>
                                 <?php if ($row['status'] == 'lunas'): ?>

@@ -379,16 +379,44 @@ body {
 /* Additional Info Labels */
 .course-class::before,
 .course-price::before,
-.course-description::before {
+.course-description::before,
+.course-jadwal::before,
+.course-pengajar::before {
     font-weight: 600;
     color: #4a5568;
     min-width: 80px;
     margin-right: 8px;
 }
 
-.course-class::before { content: "Kelas:"; }
-.course-price::before { content: "Harga:"; }
+.course-class::before    { content: "Kelas:"; }
+.course-price::before    { content: "Harga:"; }
 .course-description::before { content: "Keterangan:"; }
+.course-jadwal::before   { content: "📅 Jadwal:"; }
+.course-pengajar::before { content: "👨‍🏫 Pengajar:"; }
+
+.course-jadwal {
+    color: #2d3748;
+    font-weight: 500;
+    display: flex;
+    align-items: flex-start;
+}
+
+.course-pengajar {
+    color: #2d3748;
+    font-weight: 500;
+    display: flex;
+    align-items: flex-start;
+}
+
+.pengajar-assigned {
+    color: #2f855a;
+    font-weight: 600;
+}
+
+.pengajar-pending {
+    color: #b7791f;
+    font-style: italic;
+}
 
 /* Focus States for Accessibility */
 .course-status:focus,
@@ -420,12 +448,32 @@ body {
     <?php else: ?>
         <?php foreach ($transaksi as $paket): ?>
             <div class="course-card">
-                <div class="course-title"><?= $paket['nama_program'] ?></div>
+                <div class="course-title"><?= esc($paket['nama_program']) ?></div>
                 <div class="course-details">
                     <div class="course-info">
-                        <div class="course-class">Kelas: <?= $paket['tingkat'] ?> <?= $paket['kelas'] ?></div>
+                        <div class="course-class">Kelas: <?= esc($paket['tingkat']) ?> <?= esc($paket['kelas']) ?></div>
                         <div class="course-price">Harga: Rp <?= number_format($paket['harga'], 0, ',', '.') ?></div>
-                        <div class="course-description">Keterangan: <?= $paket['keterangan'] ?? 'Tidak ada keterangan' ?></div>
+                        <div class="course-description">Keterangan: <?= esc($paket['keterangan'] ?? 'Tidak ada keterangan') ?></div>
+
+                        <?php if (!empty($paket['hari'])): ?>
+                        <div class="course-jadwal">
+                            <?= esc($paket['hari']) ?>
+                            <?php if (!empty($paket['jam_mulai'])): ?>
+                                &nbsp;|&nbsp; <?= substr($paket['jam_mulai'], 0, 5) ?> – <?= substr($paket['jam_selesai'], 0, 5) ?> WIB
+                            <?php endif; ?>
+                        </div>
+                        <?php else: ?>
+                        <div class="course-jadwal"><span style="color:#a0aec0;font-style:italic;">Jadwal belum diatur</span></div>
+                        <?php endif; ?>
+
+                        <div class="course-pengajar">
+                            <?php if (!empty($paket['nama_pengajar'])): ?>
+                                <span class="pengajar-assigned"><?= esc($paket['nama_pengajar']) ?></span>
+                            <?php else: ?>
+                                <span class="pengajar-pending">Pengajar akan di-assign setelah konfirmasi pembayaran</span>
+                            <?php endif; ?>
+                        </div>
+
                         <div class="course-status-info">
                             Status:
                             <?php if ($paket['status'] == 'lunas'): ?>

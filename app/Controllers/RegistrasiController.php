@@ -6,6 +6,8 @@ use App\Models\TransaksiModel;
 use App\Models\ProgramBimbelModel;
 use App\Models\UserModel;
 use App\Models\NoRekeningModel;
+use App\Models\JadwalModel;
+use App\Models\KelasBimbelModel;
 use CodeIgniter\RESTful\ResourceController;
 
 class RegistrasiController extends ResourceController
@@ -14,102 +16,123 @@ class RegistrasiController extends ResourceController
     protected $programModel;
     protected $userModel;
     protected $rekeningModel;
+    protected $jadwalModel;
+    protected $kelasModel;
 
     public function __construct()
     {
         $this->transaksiModel = new TransaksiModel();
-        $this->programModel = new ProgramBimbelModel();
-        $this->userModel = new UserModel();
-        $this->rekeningModel = new NoRekeningModel();
+        $this->programModel   = new ProgramBimbelModel();
+        $this->userModel      = new UserModel();
+        $this->rekeningModel  = new NoRekeningModel();
+        $this->jadwalModel    = new JadwalModel();
+        $this->kelasModel     = new KelasBimbelModel();
     }
 
+    /**
+     * Halaman pilih program — filter sesuai tingkat siswa yang sedang login.
+     */
     public function registrasiPembayaran()
     {
-        // Ambil data program bimbel untuk dropdown
-        $data['program'] = $this->programModel->findAll();
+        $tingkatSiswa = session()->get('tingkat');
+
+        if ($tingkatSiswa) {
+            $program = $this->programModel->where('tingkat', $tingkatSiswa)->findAll();
+        } else {
+            $program = $this->programModel->findAll();
+        }
+
+        $data['program']  = $program;
+        $data['jadwal']   = $this->jadwalModel->orderBy('hari', 'ASC')->orderBy('jam_mulai', 'ASC')->findAll();
+        $data['rekening'] = $this->rekeningModel->findAll();
 
         return view('pembayaran/registrasipembayaran', $data);
     }
 
+    /**
+     * Proses submit order baru.
+     * Siswa memilih program + jadwal + upload bukti bayar.
+     * Pengajar akan di-assign saat admin konfirmasi lunas.
+     */
     public function submit()
     {
-        // Validasi input
         $rules = [
             'program_id' => 'required|numeric|is_not_unique[program_bimbel.program_id]',
-            'tagihan' => 'required|numeric',
+            'jadwal_id'  => 'required|numeric|is_not_unique[jadwal.jadwal_id]',
+            'tagihan'    => 'required|numeric',
         ];
 
-        // Validasi file bukti pembayaran
         if (!$this->validate($rules)) {
-            return redirect()->back()->with('error', 'Mohon lengkapi semua field dengan benar.');
+            return redirect()->back()->withInput()->with('error', 'Mohon lengkapi semua field dengan benar.');
         }
 
-        // Proses upload bukti pembayaran
+        $programId    = (int) $this->request->getPost('program_id');
+        $jadwalId     = (int) $this->request->getPost('jadwal_id');
+        $tingkatSiswa = session()->get('tingkat');
+
+        // Verifikasi program sesuai tingkat siswa
+        $program = $this->programModel->find($programId);
+        if (!$program) {
+            return redirect()->back()->with('error', 'Program tidak ditemukan.');
+        }
+
+        if ($tingkatSiswa && $program['tingkat'] !== $tingkatSiswa) {
+            return redirect()->back()->with('error', 'Program tidak sesuai dengan jenjang pendidikan Anda (' . $tingkatSiswa . ').');
+        }
+
+        // Cek sudah terdaftar di program+jadwal yang sama
+        $existing = $this->transaksiModel
+            ->where('user_id', session()->get('user_id'))
+            ->where('program_id', $programId)
+            ->where('jadwal_id', $jadwalId)
+            ->whereIn('status', ['pending', 'lunas'])
+            ->first();
+
+        if ($existing) {
+            return redirect()->back()->with('error', 'Anda sudah terdaftar di program dan jadwal ini.');
+        }
+
+        // Upload bukti pembayaran
         $bukti = $this->request->getFile('photo_bukti');
-
-        if (!$bukti->isValid()) {
-            return redirect()->back()->with('error', 'File bukti pembayaran tidak valid. Silakan pilih file gambar.');
+        if (!$bukti || !$bukti->isValid()) {
+            return redirect()->back()->with('error', 'File bukti pembayaran tidak valid.');
         }
 
-        // Buat nama file unik dan pindahkan ke folder uploads
         $buktiName = $bukti->getRandomName();
         $bukti->move(ROOTPATH . 'public/uploads/bukti_pembayaran', $buktiName);
 
-        // Siapkan data transaksi
-        $data = [
-            'user_id' => session()->get('user_id'),
-            'program_id' => $this->request->getPost('program_id'),
-            'tagihan' => $this->request->getPost('tagihan'),
+        $this->transaksiModel->insert([
+            'user_id'     => session()->get('user_id'),
+            'program_id'  => $programId,
+            'jadwal_id'   => $jadwalId,
+            'tagihan'     => $this->request->getPost('tagihan'),
             'photo_bukti' => $buktiName,
-            'status' => 'pending' // Status awal pending, menunggu konfirmasi admin
-        ];
+            'status'      => 'pending',
+        ]);
 
-        // Simpan transaksi
-        $this->transaksiModel->insert($data);
-
-        // Redirect ke halaman paket aktif dengan pesan sukses
         return redirect()->to(base_url('/registrasi-pembayaran/paket-aktif'))
-            ->with('success', 'Registrasi pembayaran berhasil dilakukan. Kami akan segera memverifikasi pembayaran Anda.');
+            ->with('success', 'Registrasi pembayaran berhasil! Menunggu konfirmasi admin.');
     }
 
     public function paketAktif()
     {
-        // Ambil user_id dari session
-        $userId = session()->get('user_id');
-
-        // Ambil data transaksi aktif (status = lunas)
+        $userId   = session()->get('user_id');
         $transaksi = $this->transaksiModel->getTransaksiByUser($userId);
 
-        // Siapkan data untuk view
-        $data = [
-            'transaksi' => $transaksi
-        ];
-
-        return view('pembayaran/paketaktif', $data);
+        return view('pembayaran/paketaktif', ['transaksi' => $transaksi]);
     }
 
     public function transferBank()
     {
-        // Ambil data rekening bank dari database
         $data['bankAccounts'] = $this->rekeningModel->findAll();
-
         return view('pembayaran/transferbank', $data);
     }
 
-
     public function history()
     {
-        // Ambil user_id dari session
-        $userId = session()->get('user_id');
-
-        // Ambil semua data transaksi siswa
+        $userId    = session()->get('user_id');
         $transaksi = $this->transaksiModel->getTransaksiByUser($userId);
 
-        // Siapkan data untuk view
-        $data = [
-            'transaksi' => $transaksi
-        ];
-
-        return view('pembayaran/history', $data);
+        return view('pembayaran/history', ['transaksi' => $transaksi]);
     }
 }
