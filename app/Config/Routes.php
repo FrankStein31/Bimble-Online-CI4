@@ -90,6 +90,7 @@ $routes->group('user', ['filter' => 'auth:admin'], function ($routes) {
 $routes->group('transaksi', ['filter' => 'auth:admin'], function ($routes) {
     $routes->post('add', 'TransaksiController::add');
     $routes->post('update/(:num)', 'TransaksiController::edit/$1');
+    $routes->post('status/(:num)', 'TransaksiController::updateStatus/$1');
     $routes->get('delete/(:num)', 'TransaksiController::delete/$1');
 });
 

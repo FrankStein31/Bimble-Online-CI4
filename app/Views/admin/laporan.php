@@ -342,7 +342,7 @@
                 <div class="two-col">
                     <div class="form-group">
                         <label>Siswa <span class="req">*</span></label>
-                        <select name="siswa_id" class="form-select" required>
+                        <select name="siswa_id" id="add_siswa" class="form-select" required onchange="adminAutoFill(this.value, 'add')">
                             <option value="">Pilih Siswa</option>
                             <?php foreach ($siswa as $s): ?>
                                 <option value="<?= $s['user_id'] ?>"><?= esc($s['nama']) ?></option>
@@ -351,7 +351,7 @@
                     </div>
                     <div class="form-group">
                         <label>Pengajar <span class="req">*</span></label>
-                        <select name="pengajar_id" class="form-select" required>
+                        <select name="pengajar_id" id="add_pengajar" class="form-select" required>
                             <option value="">Pilih Pengajar</option>
                             <?php foreach ($pengajar as $pg): ?>
                                 <option value="<?= $pg['user_id'] ?>"><?= esc($pg['nama']) ?> (<?= $pg['jabatan'] ?>)</option>
@@ -361,12 +361,13 @@
                 </div>
                 <div class="form-group">
                     <label>Program <span class="req">*</span></label>
-                    <select name="program_id" class="form-select" required>
+                    <select name="program_id" id="add_program" class="form-select" required>
                         <option value="">Pilih Program</option>
                         <?php foreach ($program as $p): ?>
                             <option value="<?= $p['program_id'] ?>"><?= esc($p['nama_program']) ?> (<?= $p['tingkat'] ?> Kls <?= $p['kelas'] ?>)</option>
                         <?php endforeach; ?>
                     </select>
+                    <div id="add_autodetect_hint" style="font-size:.75rem;color:#38a169;margin-top:3px;display:none;">✅ Terdeteksi otomatis dari paket aktif siswa</div>
                 </div>
                 <div class="two-col">
                     <div class="form-group">
@@ -410,7 +411,7 @@
                 <div class="two-col">
                     <div class="form-group">
                         <label>Siswa <span class="req">*</span></label>
-                        <select name="siswa_id" id="e_siswa" class="form-select" required>
+                        <select name="siswa_id" id="e_siswa" class="form-select" required onchange="adminAutoFill(this.value, 'edit')">
                             <?php foreach ($siswa as $s): ?>
                                 <option value="<?= $s['user_id'] ?>"><?= esc($s['nama']) ?></option>
                             <?php endforeach; ?>
@@ -485,6 +486,23 @@
 </div>
 
 <script>
+    // Siswa → {program_id, pengajar_id} mapping from server
+    const adminSiswaMap = <?= json_encode($siswaMap ?? []) ?>;
+
+    function adminAutoFill(siswaId, mode) {
+        if (!siswaId || !adminSiswaMap[siswaId]) return;
+        const map = adminSiswaMap[siswaId];
+        if (mode === 'add') {
+            document.getElementById('add_pengajar').value = map.pengajar_id ?? '';
+            document.getElementById('add_program').value  = map.program_id ?? '';
+            const hint = document.getElementById('add_autodetect_hint');
+            if (hint) hint.style.display = 'block';
+        } else if (mode === 'edit') {
+            document.getElementById('e_pengajar').value = map.pengajar_id ?? '';
+            document.getElementById('e_program').value  = map.program_id ?? '';
+        }
+    }
+
     // ---- Tab switching ----
     function switchTab(name, btn) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));

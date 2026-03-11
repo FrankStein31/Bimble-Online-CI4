@@ -108,7 +108,7 @@
 <body>
     <?php
         $role = session()->get('role');
-        $dashboardUrl = $role === 'admin' ? base_url('dashboard') : ($role === 'pengajar' ? base_url('pengajar/dashboard') : base_url('siswa/dashboard'));
+        $dashboardUrl = $role === 'admin' ? base_url('dashboard') : ($role === 'pengajar' ? base_url('pengajar/dashboard') : base_url('registrasi-pembayaran/paket-aktif'));
         $roleLabel = $role === 'admin' ? 'Admin' : ($role === 'pengajar' ? 'Pengajar' : 'Siswa');
         $jabatan = session()->get('jabatan') ?? session()->get('tingkat') ?? null;
     ?>

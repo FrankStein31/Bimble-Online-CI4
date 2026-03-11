@@ -87,6 +87,33 @@ class LaporanController extends BaseController
         // Semua data untuk form CRUD
         $hasilAll = $this->hasilModel->getAll();
 
+        // Build siswa mapping: siswa_id => {program_id, pengajar_id, nama_program, nama_pengajar}
+        $db = \Config\Database::connect();
+        $transaksiRows = $db->table('transaksi')
+            ->select('transaksi.user_id, transaksi.program_id, transaksi.pengajar_id,
+                      program_bimbel.nama_program, program_bimbel.tingkat, program_bimbel.kelas,
+                      user_pengajar.nama as nama_pengajar')
+            ->join('program_bimbel', 'program_bimbel.program_id = transaksi.program_id', 'left')
+            ->join('user as user_pengajar', 'user_pengajar.user_id = transaksi.pengajar_id', 'left')
+            ->where('transaksi.status', 'lunas')
+            ->orderBy('transaksi.transaksi_id', 'DESC')
+            ->get()->getResultArray();
+
+        $siswaMap = [];
+        foreach ($transaksiRows as $row) {
+            $uid = $row['user_id'];
+            if (!isset($siswaMap[$uid])) {
+                $siswaMap[$uid] = [
+                    'program_id'    => $row['program_id'],
+                    'pengajar_id'   => $row['pengajar_id'],
+                    'nama_program'  => $row['nama_program'],
+                    'tingkat'       => $row['tingkat'],
+                    'kelas'         => $row['kelas'],
+                    'nama_pengajar' => $row['nama_pengajar'],
+                ];
+            }
+        }
+
         return view('admin/laporan', [
             'hasil'     => $hasil,
             'hasilAll'  => $hasilAll,
@@ -94,6 +121,7 @@ class LaporanController extends BaseController
             'program'   => $this->programModel->findAll(),
             'pengajar'  => $this->userModel->where('role', 'pengajar')->findAll(),
             'siswa'     => $this->userModel->where('role', 'siswa')->findAll(),
+            'siswaMap'  => $siswaMap,
         ]);
     }
 

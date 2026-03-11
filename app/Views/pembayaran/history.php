@@ -1,23 +1,58 @@
 <?= $this->extend('layouts/navbar') ?>
 <?= $this->section('content') ?>
 <style>
-    /* History Section */
-.history {
+body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 60px 20px;
-    max-width: 1000px;
-    margin: 0 auto;
-    min-height: calc(100vh - 200px);
+    background: #f0f4ff;
+    min-height: 100vh;
 }
-
-.page-title {
-    text-align: center;
-    margin-bottom: 40px;
-    font-size: 2.2rem;
-    color: #2d3748;
-    font-weight: 600;
+/* Hero */
+.hero-greeting {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px 80px;
+    text-align: center; color: white; position: relative; overflow: hidden;
 }
-
+.hero-greeting::before {
+    content: ''; position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-greeting .inner { position: relative; max-width: 700px; margin: 0 auto; }
+.hero-greeting h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 6px; }
+.hero-greeting p  { font-size: 1rem; opacity: .85; }
+/* Tabs */
+.page-tabs {
+    display: flex; justify-content: center; gap: 10px;
+    margin: -28px auto 0; position: relative; z-index: 10;
+    max-width: 600px; padding: 0 16px;
+}
+.page-tab {
+    flex: 1; padding: 12px 8px; border-radius: 12px; background: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,.12); text-align: center;
+    text-decoration: none; color: #4a5568; font-size: .78rem; font-weight: 600;
+    transition: all .25s; border: 2px solid transparent;
+}
+.page-tab:hover, .page-tab.active { border-color: #667eea; color: #667eea; box-shadow: 0 6px 24px rgba(102,126,234,.2); transform: translateY(-2px); }
+.page-tab .tab-icon { font-size: 1.3rem; display: block; margin-bottom: 3px; }
+/* Content */
+.history-content { max-width: 900px; margin: 0 auto; padding: 36px 16px 60px; }
+.section-title { font-size: 1.1rem; font-weight: 700; color: #2d3748; margin-bottom: 16px; }
+/* Table */
+.tbl-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,.07); border: 1px solid #e2e8f0; overflow-x: auto; }
+.tbl-card table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.tbl-card thead { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+.tbl-card th { padding: 16px 14px; font-size: .82rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; border: none; }
+.tbl-card td { padding: 14px 14px; border-bottom: 1px solid #f1f5f9; font-size: .88rem; color: #4a5568; vertical-align: middle; }
+.tbl-card tbody tr:last-child td { border-bottom: none; }
+.tbl-card tbody tr:hover td { background: #f8fafc; }
+/* Status pills */
+.status-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+.pill-lunas   { background: #d1fae5; color: #065f46; }
+.pill-pending { background: #fef3c7; color: #92400e; }
+.pill-ditolak { background: #fee2e2; color: #7f1d1d; }
+/* Empty */
+.empty-state { text-align: center; padding: 60px 24px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.06); border: 2px dashed #c7d2fe; }
+.empty-state .emoji { font-size: 3.5rem; display: block; margin-bottom: 14px; }
+.empty-state p { color: #718096; font-size: .9rem; }
 /* Table Container */
 .table-container {
     background: white;
@@ -332,21 +367,48 @@ tbody tr:nth-child(3) { animation-delay: 0.3s; }
 tbody tr:nth-child(4) { animation-delay: 0.4s; }
 tbody tr:nth-child(5) { animation-delay: 0.5s; }
 </style>
-<section class="container history">
-    <h2 class="page-title">Riwayat Transaksi</h2>
+
+<!-- Hero -->
+<div class="hero-greeting">
+    <div class="inner">
+        <h1>📋 Riwayat Transaksi</h1>
+        <p>Lihat semua histori pendaftaran dan status pembayaran Anda</p>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="page-tabs">
+    <a href="<?= base_url('/registrasi-pembayaran/paket-aktif') ?>" class="page-tab">
+        <span class="tab-icon">📚</span>Paket Aktif
+    </a>
+    <a href="<?= base_url('/registrasi-pembayaran') ?>" class="page-tab">
+        <span class="tab-icon">➕</span>Daftar Baru
+    </a>
+    <a href="<?= base_url('/registrasi-pembayaran/history') ?>" class="page-tab active">
+        <span class="tab-icon">📋</span>Riwayat
+    </a>
+    <a href="<?= base_url('account/profile') ?>" class="page-tab">
+        <span class="tab-icon">👤</span>Akun
+    </a>
+</div>
+
+<div class="history-content">
+    <div class="section-title">📋 Semua Riwayat Pembayaran</div>
 
     <?php if (empty($transaksi)): ?>
-        <div class="no-data">
+        <div class="empty-state">
+            <span class="emoji">📭</span>
             <p>Anda belum memiliki riwayat transaksi</p>
         </div>
     <?php else: ?>
-        <div class="table-container">
+        <div class="tbl-card">
             <table>
                 <thead>
                     <tr>
-                        <th>Tanggal</th>
+                        <th>#</th>
+                        <th>Tanggal Daftar</th>
                         <th>Program</th>
-                        <th>Tingkat/Kelas</th>
+                        <th>Tingkat / Kelas</th>
                         <th>Jadwal</th>
                         <th>Pengajar</th>
                         <th>Tagihan</th>
@@ -354,36 +416,43 @@ tbody tr:nth-child(5) { animation-delay: 0.5s; }
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($transaksi as $row): ?>
+                    <?php foreach ($transaksi as $i => $row): ?>
                         <tr>
-                            <td class="date-col"><?= date('d-m-Y', strtotime($row['created_at'])) ?></td>
-                            <td><?= esc($row['nama_program']) ?></td>
-                            <td><?= esc($row['tingkat']) ?> <?= esc($row['kelas']) ?></td>
+                            <td style="color:#a0aec0;font-size:.8rem;"><?= $i + 1 ?></td>
+                            <td style="white-space:nowrap;font-weight:500;color:#2d3748;"><?= date('d/m/Y', strtotime($row['created_at'])) ?></td>
+                            <td><strong><?= esc($row['nama_program']) ?></strong></td>
                             <td>
-                                <?php if (!empty($row['hari'])): ?>
-                                    <?= esc($row['hari']) ?>
-                                    <?php if (!empty($row['jam_mulai'])): ?>
-                                        <br><small style="color:#718096;"><?= substr($row['jam_mulai'],0,5) ?> – <?= substr($row['jam_selesai'],0,5) ?></small>
-                                    <?php endif; ?>
+                                <span style="display:inline-block;background:#eef2ff;color:#3730a3;border-radius:6px;padding:2px 8px;font-size:.75rem;font-weight:600;">
+                                    <?= esc($row['tingkat']) ?> Kls <?= esc($row['kelas']) ?>
+                                </span>
+                            </td>
+                            <td>
+                                <?php if (!empty($row['jadwal_list'])): ?>
+                                    <?php foreach ($row['jadwal_list'] as $jdw): ?>
+                                        <div style="white-space:nowrap;line-height:1.8;">
+                                            <strong><?= esc($jdw['hari']) ?></strong>
+                                            <small style="color:#718096;"> <?= substr($jdw['jam_mulai'],0,5) ?>–<?= substr($jdw['jam_selesai'],0,5) ?> WIB</small>
+                                        </div>
+                                    <?php endforeach; ?>
                                 <?php else: ?>
-                                    <span style="color:#a0aec0;">-</span>
+                                    <span style="color:#a0aec0;font-style:italic;font-size:.8rem;">Belum ditentukan</span>
                                 <?php endif; ?>
                             </td>
                             <td>
                                 <?php if (!empty($row['nama_pengajar'])): ?>
-                                    <span style="color:#2f855a;font-weight:600;"><?= esc($row['nama_pengajar']) ?></span>
+                                    <span style="color:#2f855a;font-weight:600;">👨‍🏫 <?= esc($row['nama_pengajar']) ?></span>
                                 <?php else: ?>
-                                    <span style="color:#b7791f;font-style:italic;">Menunggu konfirmasi</span>
+                                    <span style="color:#b7791f;font-style:italic;font-size:.8rem;">Menunggu konfirmasi</span>
                                 <?php endif; ?>
                             </td>
-                            <td>Rp <?= number_format($row['tagihan'], 0, ',', '.') ?></td>
+                            <td style="font-weight:600;color:#667eea;white-space:nowrap;">Rp <?= number_format($row['tagihan'], 0, ',', '.') ?></td>
                             <td>
-                                <?php if ($row['status'] == 'lunas'): ?>
-                                    <span class="status-badge status-lunas">Lunas</span>
-                                <?php elseif ($row['status'] == 'pending'): ?>
-                                    <span class="status-badge status-pending">Pending</span>
+                                <?php if ($row['status'] === 'lunas'): ?>
+                                    <span class="status-pill pill-lunas">✓ Lunas</span>
+                                <?php elseif ($row['status'] === 'pending'): ?>
+                                    <span class="status-pill pill-pending">⏳ Pending</span>
                                 <?php else: ?>
-                                    <span class="status-badge status-ditolak">Ditolak</span>
+                                    <span class="status-pill pill-ditolak">✗ Ditolak</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -392,5 +461,6 @@ tbody tr:nth-child(5) { animation-delay: 0.5s; }
             </table>
         </div>
     <?php endif; ?>
-</section>
+</div>
+
 <?= $this->endSection() ?>

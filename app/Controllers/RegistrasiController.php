@@ -43,7 +43,6 @@ class RegistrasiController extends ResourceController
         }
 
         $data['program']  = $program;
-        $data['jadwal']   = $this->jadwalModel->orderBy('hari', 'ASC')->orderBy('jam_mulai', 'ASC')->findAll();
         $data['rekening'] = $this->rekeningModel->findAll();
 
         return view('pembayaran/registrasipembayaran', $data);
@@ -51,14 +50,13 @@ class RegistrasiController extends ResourceController
 
     /**
      * Proses submit order baru.
-     * Siswa memilih program + jadwal + upload bukti bayar.
-     * Pengajar akan di-assign saat admin konfirmasi lunas.
+     * Siswa memilih program + upload bukti bayar.
+     * Jadwal & Pengajar akan di-assign saat admin konfirmasi lunas.
      */
     public function submit()
     {
         $rules = [
             'program_id' => 'required|numeric|is_not_unique[program_bimbel.program_id]',
-            'jadwal_id'  => 'required|numeric|is_not_unique[jadwal.jadwal_id]',
             'tagihan'    => 'required|numeric',
         ];
 
@@ -67,7 +65,6 @@ class RegistrasiController extends ResourceController
         }
 
         $programId    = (int) $this->request->getPost('program_id');
-        $jadwalId     = (int) $this->request->getPost('jadwal_id');
         $tingkatSiswa = session()->get('tingkat');
 
         // Verifikasi program sesuai tingkat siswa
@@ -80,16 +77,15 @@ class RegistrasiController extends ResourceController
             return redirect()->back()->with('error', 'Program tidak sesuai dengan jenjang pendidikan Anda (' . $tingkatSiswa . ').');
         }
 
-        // Cek sudah terdaftar di program+jadwal yang sama
+        // Cek sudah terdaftar di program yang sama
         $existing = $this->transaksiModel
             ->where('user_id', session()->get('user_id'))
             ->where('program_id', $programId)
-            ->where('jadwal_id', $jadwalId)
             ->whereIn('status', ['pending', 'lunas'])
             ->first();
 
         if ($existing) {
-            return redirect()->back()->with('error', 'Anda sudah terdaftar di program dan jadwal ini.');
+            return redirect()->back()->with('error', 'Anda sudah terdaftar di program ini.');
         }
 
         // Upload bukti pembayaran
@@ -104,7 +100,7 @@ class RegistrasiController extends ResourceController
         $this->transaksiModel->insert([
             'user_id'     => session()->get('user_id'),
             'program_id'  => $programId,
-            'jadwal_id'   => $jadwalId,
+            'jadwal_id'   => null,
             'tagihan'     => $this->request->getPost('tagihan'),
             'photo_bukti' => $buktiName,
             'status'      => 'pending',

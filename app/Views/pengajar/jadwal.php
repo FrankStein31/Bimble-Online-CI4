@@ -9,7 +9,9 @@
     $hariOrder = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
     $byHari = [];
     foreach ($kelasList as $k) {
-        $byHari[$k['hari']][] = $k;
+        // Kelompokkan berdasarkan hari pertama di jadwal_list
+        $hariPertama = !empty($k['jadwal_list']) ? $k['jadwal_list'][0]['hari'] : 'Lainnya';
+        $byHari[$hariPertama][] = $k;
     }
 ?>
 
@@ -51,26 +53,36 @@
                             <th>#</th>
                             <th>Program</th>
                             <th>Jenjang</th>
-                            <th>Jam</th>
-                            <th>Durasi</th>
+                            <th>Jadwal Pertemuan</th>
                             <th>Kapasitas</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($byHari[$hari] as $i => $k): ?>
-                            <?php
-                                $mulai = strtotime($k['jam_mulai']);
-                                $selesai = strtotime($k['jam_selesai']);
-                                $menit = ($selesai - $mulai) / 60;
-                                $jam = floor($menit/60); $sisa = $menit % 60;
-                                $durStr = $menit >= 60 ? ($jam.'j'.($sisa ? ' '.$sisa.'m' : '')) : ($menit.'m');
-                            ?>
                             <tr>
                                 <td><?= $i + 1 ?></td>
                                 <td><strong><?= esc($k['nama_program']) ?></strong></td>
                                 <td><span class="badge badge-<?= $k['tingkat'] ?>"><?= $k['tingkat'] ?> Kls <?= $k['kelas_program'] ?></span></td>
-                                <td style="white-space:nowrap;">🕐 <?= substr($k['jam_mulai'],0,5) ?> → <?= substr($k['jam_selesai'],0,5) ?> WIB</td>
-                                <td><span style="background:#f1f5f9;padding:2px 8px;border-radius:8px;font-size:.78rem;color:#4a5568;">⏱ <?= trim($durStr) ?></span></td>
+                                <td>
+                                    <?php if (!empty($k['jadwal_list'])): ?>
+                                        <?php foreach ($k['jadwal_list'] as $jdw): ?>
+                                            <?php
+                                                $mStart = strtotime($jdw['jam_mulai']);
+                                                $mEnd   = strtotime($jdw['jam_selesai']);
+                                                $menit  = ($mEnd - $mStart) / 60;
+                                                $jam    = floor($menit/60); $sisa = $menit % 60;
+                                                $durStr = $menit >= 60 ? ($jam.'j'.($sisa ? ' '.$sisa.'m' : '')) : ($menit.'m');
+                                            ?>
+                                            <div style="white-space:nowrap;line-height:1.9;">
+                                                <span style="font-weight:600;color:#2d3748;">🕐 <?= esc($jdw['hari']) ?></span>
+                                                <span style="color:#718096;font-size:.85rem;"> <?= substr($jdw['jam_mulai'],0,5) ?>→<?= substr($jdw['jam_selesai'],0,5) ?> WIB</span>
+                                                <span style="background:#ebf4ff;color:#2b6cb0;border-radius:8px;padding:1px 7px;font-size:.75rem;margin-left:4px;">⏱ <?= trim($durStr) ?></span>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span style="color:#a0aec0;font-size:.8rem;">—</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <span class="<?= $k['terisi'] >= $k['kuota'] ? 'cap-full' : 'cap-ok' ?>">
                                         <?= $k['terisi'] ?>/<?= $k['kuota'] ?> siswa

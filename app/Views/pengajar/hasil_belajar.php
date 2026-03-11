@@ -101,7 +101,7 @@
                 <div class="two-col">
                     <div class="form-group">
                         <label>Siswa <span class="req">*</span></label>
-                        <select name="siswa_id" class="form-select" required>
+                        <select name="siswa_id" id="add_siswa" class="form-select" required onchange="autoFillProgram(this.value)">
                             <option value="">Pilih Siswa</option>
                             <?php foreach ($siswa as $s): ?>
                                 <option value="<?= $s['user_id'] ?>"><?= esc($s['nama']) ?></option>
@@ -110,12 +110,13 @@
                     </div>
                     <div class="form-group">
                         <label>Program <span class="req">*</span></label>
-                        <select name="program_id" class="form-select" required>
+                        <select name="program_id" id="add_program" class="form-select" required>
                             <option value="">Pilih Program</option>
                             <?php foreach ($program as $p): ?>
                                 <option value="<?= $p['program_id'] ?>"><?= esc($p['nama_program']) ?> (<?= $p['tingkat'] ?> Kls <?= $p['kelas'] ?>)</option>
                             <?php endforeach; ?>
                         </select>
+                        <div id="add_program_hint" style="font-size:.75rem;color:#38a169;margin-top:3px;display:none;">✅ Terdeteksi otomatis dari paket siswa</div>
                     </div>
                 </div>
                 <div class="two-col">
@@ -160,7 +161,7 @@
                 <div class="two-col">
                     <div class="form-group">
                         <label>Siswa <span class="req">*</span></label>
-                        <select name="siswa_id" id="e_siswa" class="form-select" required>
+                        <select name="siswa_id" id="e_siswa" class="form-select" required onchange="autoFillEditProgram(this.value)">
                             <?php foreach ($siswa as $s): ?>
                                 <option value="<?= $s['user_id'] ?>"><?= esc($s['nama']) ?></option>
                             <?php endforeach; ?>
@@ -205,6 +206,27 @@
 </div>
 
 <script>
+    // Siswa → Program mapping from server
+    const siswaMap = <?= json_encode($siswaMap ?? []) ?>;
+
+    function autoFillProgram(siswaId) {
+        const programSel = document.getElementById('add_program');
+        const hint       = document.getElementById('add_program_hint');
+        if (siswaId && siswaMap[siswaId]) {
+            programSel.value = siswaMap[siswaId];
+            hint.style.display = 'block';
+        } else {
+            programSel.value = '';
+            hint.style.display = 'none';
+        }
+    }
+
+    function autoFillEditProgram(siswaId) {
+        if (siswaId && siswaMap[siswaId]) {
+            document.getElementById('e_program').value = siswaMap[siswaId];
+        }
+    }
+
     // Override openEditModal dari layout untuk versi terpusat ini
     function openEditModal(id, data) {
         document.getElementById('editForm').action = '<?= base_url('pengajar/hasil-belajar/edit/') ?>' + id;

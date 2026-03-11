@@ -28,10 +28,27 @@ class TransaksiController extends ResourceController
 
     public function transaksi()
     {
+        $db = \Config\Database::connect();
+
         $data['transaksi'] = $this->transaksiModel->getTransaksiWithDetails();
         $data['siswa']     = $this->userModel->where('role', 'siswa')->findAll();
         $data['program']   = $this->programBimbelModel->findAll();
         $data['jadwal']    = $this->jadwalModel->findAll();
+
+        // Jadwal per program (untuk info di edit modal)
+        $programJadwal = [];
+        $pjRows = $db->table('program_jadwal pj')
+            ->select('pj.program_id, pj.jadwal_id, pj.urutan, j.hari, j.jam_mulai, j.jam_selesai')
+            ->join('jadwal j', 'j.jadwal_id = pj.jadwal_id')
+            ->orderBy('pj.program_id')->orderBy('pj.urutan')
+            ->get()->getResultArray();
+        foreach ($pjRows as $row) {
+            $pid = $row['program_id'];
+            if (!isset($programJadwal[$pid])) $programJadwal[$pid] = [];
+            $programJadwal[$pid][] = $row['hari'] . ' ' . substr($row['jam_mulai'], 0, 5) . '–' . substr($row['jam_selesai'], 0, 5);
+        }
+        $data['programJadwal'] = $programJadwal;
+
         return view('admin/transaksi', $data);
     }
 
@@ -79,10 +96,23 @@ class TransaksiController extends ResourceController
         $statusLama = $transaksi['status'];
         $statusBaru = $this->request->getPost('status');
 
+        $newProgramId = (int) $this->request->getPost('program_id');
+
+        // Jika program berubah, reset jadwal_id ke jadwal pertama dari program baru
+        $jadwalId = $transaksi['jadwal_id'];
+        if ($newProgramId !== (int) $transaksi['program_id']) {
+            $db = \Config\Database::connect();
+            $pj = $db->table('program_jadwal')
+                ->where('program_id', $newProgramId)
+                ->orderBy('urutan', 'ASC')
+                ->get()->getRowArray();
+            $jadwalId = $pj ? (int) $pj['jadwal_id'] : null;
+        }
+
         $data = [
             'user_id'    => $this->request->getPost('user_id'),
-            'program_id' => $this->request->getPost('program_id'),
-            'jadwal_id'  => $this->request->getPost('jadwal_id') ?: null,
+            'program_id' => $newProgramId,
+            'jadwal_id'  => $jadwalId,
             'tagihan'    => $this->request->getPost('tagihan'),
             'status'     => $statusBaru,
         ];
@@ -110,6 +140,43 @@ class TransaksiController extends ResourceController
         }
 
         return redirect()->to(base_url('dashboard/transaksi'))->with('success', 'Data transaksi berhasil diperbarui.');
+    }
+
+    /**
+     * Quick status update — called via POST from inline buttons in the table.
+     * Handles auto-assign on lunas and class release on ditolak.
+     */
+    public function updateStatus($id = null)
+    {
+        if (!$id) {
+            return redirect()->to(base_url('dashboard/transaksi'))->with('error', 'ID tidak valid.');
+        }
+
+        $transaksi = $this->transaksiModel->find($id);
+        if (!$transaksi) {
+            return redirect()->to(base_url('dashboard/transaksi'))->with('error', 'Transaksi tidak ditemukan.');
+        }
+
+        $statusLama = $transaksi['status'];
+        $statusBaru = $this->request->getPost('status');
+
+        if (!in_array($statusBaru, ['pending', 'lunas', 'ditolak'])) {
+            return redirect()->to(base_url('dashboard/transaksi'))->with('error', 'Status tidak valid.');
+        }
+
+        $this->transaksiModel->update($id, ['status' => $statusBaru]);
+
+        if ($statusBaru === 'lunas' && $statusLama !== 'lunas') {
+            $this->assignGuru((int) $id);
+        }
+
+        if ($statusLama === 'lunas' && $statusBaru !== 'lunas') {
+            $this->lepasKelas((int) $id, $transaksi);
+        }
+
+        $labels = ['lunas' => 'Lunas', 'pending' => 'Pending', 'ditolak' => 'Ditolak'];
+        return redirect()->to(base_url('dashboard/transaksi'))
+            ->with('success', 'Status transaksi ' . $transaksi['user_id'] . ' diubah ke ' . $labels[$statusBaru] . '.');
     }
 
     public function delete($id = null)
@@ -154,17 +221,18 @@ class TransaksiController extends ResourceController
 
     /**
      * Auto-assign guru ke transaksi yang baru lunas.
+     * Jika jadwal_id belum diset, ambil jadwal pertama dari program_jadwal.
      * Cari/buat kelas_bimbel dengan slot tersedia.
      * Update transaksi.kelas_id dan transaksi.pengajar_id.
      */
     private function assignGuru(int $transaksiId): void
     {
         $transaksi = $this->transaksiModel->find($transaksiId);
-        if (!$transaksi || !$transaksi['jadwal_id']) {
+        if (!$transaksi) {
             return;
         }
 
-        // Cek sudah ada kelas_id
+        // Cek sudah ada kelas_id (sudah assigned sebelumnya)
         if ($transaksi['kelas_id']) {
             return;
         }
@@ -177,7 +245,26 @@ class TransaksiController extends ResourceController
 
         $tingkat   = $program['tingkat'];
         $programId = (int) $transaksi['program_id'];
-        $jadwalId  = (int) $transaksi['jadwal_id'];
+
+        // Jika jadwal_id belum diset, ambil jadwal pertama dari program_jadwal
+        $jadwalId = $transaksi['jadwal_id'] ? (int) $transaksi['jadwal_id'] : null;
+        if (!$jadwalId) {
+            $db = \Config\Database::connect();
+            $pj = $db->table('program_jadwal')
+                ->where('program_id', $programId)
+                ->orderBy('urutan', 'ASC')
+                ->get()->getRowArray();
+            if ($pj) {
+                $jadwalId = (int) $pj['jadwal_id'];
+                // Simpan jadwal_id ke transaksi agar konsisten
+                $this->transaksiModel->update($transaksiId, ['jadwal_id' => $jadwalId]);
+            }
+        }
+
+        if (!$jadwalId) {
+            log_message('warning', "Program $programId tidak memiliki jadwal terdaftar, assign dibatalkan.");
+            return;
+        }
 
         // Cari atau buat kelas bimbel
         $kelasId = $this->kelasModel->getOrCreateKelas($programId, $jadwalId, $tingkat);

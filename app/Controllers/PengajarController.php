@@ -77,10 +77,28 @@ class PengajarController extends BaseController
             $program = $programQuery->findAll();
         }
 
+        // Build siswa→program mapping from active transaksi
+        $siswaMap = [];
+        foreach ($siswa as $s) {
+            $db = \Config\Database::connect();
+            $row = $db->table('transaksi')
+                ->select('transaksi.program_id')
+                ->where('transaksi.user_id', $s['user_id'])
+                ->where('transaksi.pengajar_id', $pengajarId)
+                ->where('transaksi.status', 'lunas')
+                ->orderBy('transaksi.transaksi_id', 'DESC')
+                ->limit(1)
+                ->get()->getRowArray();
+            if ($row) {
+                $siswaMap[$s['user_id']] = (int)$row['program_id'];
+            }
+        }
+
         return view('pengajar/hasil_belajar', [
-            'hasil'   => $hasil,
-            'siswa'   => $siswa,
-            'program' => $program,
+            'hasil'    => $hasil,
+            'siswa'    => $siswa,
+            'program'  => $program,
+            'siswaMap' => $siswaMap,
         ]);
     }
 

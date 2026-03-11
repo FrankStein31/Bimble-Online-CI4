@@ -48,22 +48,31 @@
                 <th>#</th>
                 <th>Program</th>
                 <th>Jenjang</th>
-                <th>Hari</th>
-                <th>Jam</th>
+                <th>Jadwal Pertemuan</th>
                 <th>Siswa</th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($kelasList)): ?>
-                <tr><td colspan="6"><div class="empty-state"><div class="icon">📭</div><p>Belum ada kelas yang diampu.</p></div></td></tr>
+                <tr><td colspan="5"><div class="empty-state"><div class="icon">📭</div><p>Belum ada kelas yang diampu.</p></div></td></tr>
             <?php else: ?>
                 <?php foreach ($kelasList as $i => $k): ?>
                     <tr>
                         <td><?= $i + 1 ?></td>
                         <td><strong><?= esc($k['nama_program']) ?></strong></td>
                         <td><span class="badge badge-<?= $k['tingkat'] ?>"><?= $k['tingkat'] ?> Kls <?= $k['kelas_program'] ?></span></td>
-                        <td><?= esc($k['hari']) ?></td>
-                        <td style="white-space:nowrap;">🕐 <?= substr($k['jam_mulai'],0,5) ?> – <?= substr($k['jam_selesai'],0,5) ?> WIB</td>
+                        <td>
+                            <?php if (!empty($k['jadwal_list'])): ?>
+                                <?php foreach ($k['jadwal_list'] as $jdw): ?>
+                                    <div style="white-space:nowrap;line-height:1.9;">
+                                        <strong><?= esc($jdw['hari']) ?></strong>
+                                        <span style="color:#718096;"> 🕐 <?= substr($jdw['jam_mulai'],0,5) ?>–<?= substr($jdw['jam_selesai'],0,5) ?> WIB</span>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <span style="color:#a0aec0;font-style:italic;">–</span>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <span class="<?= $k['terisi'] >= $k['kuota'] ? 'cap-full' : 'cap-ok' ?>">
                                 <?= $k['terisi'] ?>/<?= $k['kuota'] ?> siswa
