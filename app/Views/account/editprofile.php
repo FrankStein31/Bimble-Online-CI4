@@ -1,453 +1,229 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Card</title>
+    <title>Edit Profil - Bimbel Harapan</title>
     <style>
-     /* Modern Edit Profile CSS - Compact Version */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
-    padding: 20px;
-}
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; }
+        body { min-height:100vh; background:#f8fafc; display:flex; flex-direction:column; }
 
-/* Profile Card Form */
-.profile-card {
-    background: white;
-    width: 100%;
-    max-width: 450px;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: 1px solid #e2e8f0;
-    position: relative;
-    overflow: hidden;
-}
+        /* Navbar */
+        .navbar {
+            background:linear-gradient(135deg,#667eea,#764ba2);
+            padding:13px 24px; display:flex; justify-content:space-between;
+            align-items:center; box-shadow:0 2px 12px rgba(102,126,234,.4);
+            position:sticky; top:0; z-index:100;
+        }
+        .navbar-brand { display:flex; align-items:center; gap:12px; }
+        .navbar-brand img { width:44px; height:44px; border-radius:8px; object-fit:cover; }
+        .navbar-brand span { color:white; font-weight:700; font-size:1rem; }
+        .btn-back {
+            display:inline-flex; align-items:center; gap:6px;
+            background:rgba(255,255,255,.2); color:white;
+            text-decoration:none; padding:7px 16px; border-radius:8px;
+            font-size:.875rem; font-weight:600; border:1px solid rgba(255,255,255,.3);
+            transition:.2s;
+        }
+        .btn-back:hover { background:rgba(255,255,255,.3); }
 
-.profile-card::before {
-    content: 'Edit Profile';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 16px;
-}
+        /* Page body */
+        .page-body {
+            flex:1; display:flex; justify-content:center; align-items:flex-start;
+            padding:40px 20px;
+        }
 
-/* Adjust form content to account for header */
-.profile-card > * {
-    margin-top: 50px;
-}
+        /* Card */
+        .profile-card {
+            background:white; border-radius:16px; width:100%; max-width:480px;
+            box-shadow:0 8px 30px rgba(0,0,0,.1); border:1px solid #e2e8f0;
+            overflow:hidden; animation:slideUp .4s ease;
+        }
+        @keyframes slideUp { from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
 
-.profile-card > *:first-child {
-    margin-top: 16px;
-}
+        /* Card header */
+        .card-header {
+            background:linear-gradient(135deg,#667eea,#764ba2);
+            padding:22px 28px 18px; text-align:center;
+        }
+        .card-header h2 { color:white; font-size:1.1rem; font-weight:700; }
+        .card-header p { color:rgba(255,255,255,.75); font-size:.8rem; margin-top:3px; }
 
-/* Profile Photo Container */
-.profile-photo-container {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    margin-bottom: 20px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-    border: 3px solid transparent;
-    background-clip: padding-box;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
+        /* Avatar upload */
+        .avatar-upload-wrap {
+            width:84px; height:84px; border-radius:50%; margin:0 auto 12px;
+            border:3px solid rgba(255,255,255,.4); overflow:hidden; position:relative;
+            background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center;
+            cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.2);
+        }
+        .avatar-upload-wrap img, .avatar-upload-wrap .avatar-initial {
+            width:100%; height:100%; object-fit:cover;
+            font-size:2rem; font-weight:700; color:white;
+            display:flex; align-items:center; justify-content:center; line-height:84px;
+            text-align:center;
+        }
+        .avatar-upload-wrap .avatar-initial { display:flex; align-items:center; justify-content:center; }
+        .overlay-label {
+            position:absolute; inset:0; background:rgba(0,0,0,.45);
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            opacity:0; transition:.2s; cursor:pointer; border-radius:50%;
+        }
+        .avatar-upload-wrap:hover .overlay-label { opacity:1; }
+        .overlay-label span { color:white; font-size:.72rem; font-weight:600; margin-top:2px; }
+        #photoInput { display:none; }
 
-.profile-photo-container::before {
-    content: '';
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    right: -3px;
-    bottom: -3px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 50%;
-    z-index: -1;
-}
+        /* Form body */
+        .form-body { padding:24px 28px; }
 
-.profile-photo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-size:.82rem; font-weight:600; color:#4a5568; margin-bottom:6px; }
+        .form-group label .req { color:#e53e3e; }
+        .input-field {
+            width:100%; padding:10px 13px; border:1px solid #e2e8f0; border-radius:8px;
+            font-size:.875rem; color:#2d3748; background:white; outline:none; transition:.2s;
+        }
+        .input-field:focus { border-color:#667eea; box-shadow:0 0 0 3px rgba(102,126,234,.15); }
+        .input-field:disabled { background:#f8fafc; color:#a0aec0; cursor:not-allowed; }
+        .form-group small { display:block; margin-top:4px; color:#a0aec0; font-size:.75rem; }
 
-/* Profile Icon */
-.profile-icon {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-}
+        /* Error */
+        .error-message {
+            color:#c53030; font-size:.75rem; margin-top:4px;
+            padding:4px 8px; background:#fff5f5; border-radius:4px; border-left:3px solid #fc8181;
+        }
 
-.profile-icon svg {
-    width: 40%;
-    height: 40%;
-    stroke: #667eea;
-    stroke-width: 2;
-}
+        /* Divider */
+        .divider { border:none; border-top:1px solid #f1f5f9; margin:18px 0; }
 
-/* Photo Upload Overlay */
-.photo-upload-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
+        /* Buttons */
+        .form-actions { display:flex; gap:10px; margin-top:20px; }
+        .btn-save {
+            flex:1; padding:11px; border:none; border-radius:9px;
+            background:linear-gradient(135deg,#667eea,#764ba2); color:white;
+            font-size:.9rem; font-weight:600; cursor:pointer;
+            box-shadow:0 3px 10px rgba(102,126,234,.35); transition:.2s;
+        }
+        .btn-save:hover { opacity:.9; transform:translateY(-1px); }
+        .btn-cancel {
+            padding:11px 20px; border:1px solid #e2e8f0; border-radius:9px;
+            background:white; color:#4a5568; font-size:.875rem; font-weight:600;
+            text-decoration:none; display:flex; align-items:center; justify-content:center;
+            transition:.2s;
+        }
+        .btn-cancel:hover { background:#f8fafc; }
 
-.photo-upload-overlay:hover {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.95));
-}
-
-.photo-upload-overlay span {
-    color: white;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-/* Form Groups */
-.form-group {
-    width: 100%;
-    margin-bottom: 16px;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #4a5568;
-}
-
-/* Input Fields */
-.input-field {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    box-sizing: border-box;
-    background-color: #f8fafc;
-    transition: all 0.3s ease;
-    color: #2d3748;
-}
-
-.input-field:focus {
-    outline: none;
-    border-color: #667eea;
-    background-color: white;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.input-field::placeholder {
-    color: #94a3b8;
-}
-
-/* Password field specific styling */
-input[type="password"].input-field {
-    font-family: 'Segoe UI', monospace;
-    letter-spacing: 1px;
-}
-
-/* Small text for password hint */
-.form-group small {
-    display: block;
-    margin-top: 4px;
-    color: #718096;
-    font-size: 0.75rem;
-    font-style: italic;
-}
-
-/* Error Messages */
-.error-message {
-    color: #e53935;
-    font-size: 0.75rem;
-    margin-top: 4px;
-    padding: 4px 8px;
-    background: rgba(229, 57, 53, 0.1);
-    border-radius: 4px;
-    border-left: 3px solid #e53935;
-}
-
-/* Submit Button */
-.edit-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 28px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 16px;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.edit-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-/* Hidden file input */
-#photoInput {
-    display: none;
-}
-
-/* Responsive Design */
-@media screen and (max-width: 768px) {
-    body {
-        padding: 16px;
-    }
-    
-    .profile-card {
-        max-width: 100%;
-        padding: 20px;
-        border-radius: 10px;
-    }
-    
-    .profile-card::before {
-        height: 45px;
-        font-size: 1.1rem;
-    }
-    
-    .profile-card > * {
-        margin-top: 45px;
-    }
-    
-    .profile-card > *:first-child {
-        margin-top: 12px;
-    }
-    
-    .profile-photo-container {
-        width: 90px;
-        height: 90px;
-        margin-bottom: 16px;
-    }
-    
-    .form-group {
-        margin-bottom: 14px;
-    }
-    
-    .input-field {
-        padding: 10px 14px;
-        font-size: 13px;
-    }
-    
-    .edit-button {
-        padding: 10px 24px;
-        font-size: 13px;
-        margin-top: 12px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .profile-card {
-        padding: 16px;
-        border-radius: 8px;
-    }
-    
-    .profile-card::before {
-        height: 40px;
-        font-size: 1rem;
-    }
-    
-    .profile-card > * {
-        margin-top: 40px;
-    }
-    
-    .profile-card > *:first-child {
-        margin-top: 10px;
-    }
-    
-    .profile-photo-container {
-        width: 80px;
-        height: 80px;
-        margin-bottom: 12px;
-    }
-    
-    .photo-upload-overlay {
-        height: 25px;
-    }
-    
-    .photo-upload-overlay span {
-        font-size: 11px;
-    }
-    
-    .form-group {
-        margin-bottom: 12px;
-    }
-    
-    .form-label {
-        font-size: 0.8rem;
-        margin-bottom: 4px;
-    }
-    
-    .input-field {
-        padding: 8px 12px;
-        font-size: 12px;
-    }
-    
-    .edit-button {
-        padding: 8px 20px;
-        font-size: 12px;
-        margin-top: 10px;
-    }
-    
-    .form-group small {
-        font-size: 0.7rem;
-    }
-    
-    .error-message {
-        font-size: 0.7rem;
-    }
-}
-
-/* Loading Animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-.profile-card {
-    animation: fadeIn 0.5s ease;
-}
-
-/* Focus States for Accessibility */
-.edit-button:focus,
-.input-field:focus,
-.photo-upload-overlay:focus {
-    outline: 2px solid #667eea;
-    outline-offset: 2px;
-}
-
-/* Success state for form fields */
-.input-field:valid:not(:placeholder-shown) {
-    border-color: #48bb78;
-    background-color: rgba(72, 187, 120, 0.05);
-}
-
-/* Loading state for submit button */
-.edit-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
-}
+        @media (max-width:480px) {
+            .page-body { padding:20px 12px; }
+            .form-body { padding:18px 16px; }
+            .card-header { padding:18px 16px 14px; }
+        }
     </style>
 </head>
-
 <body>
+    <?php
+        $role = session()->get('role');
+        $profileUrl = base_url('account/profile');
+    ?>
 
-    <form class="profile-card" action="<?= base_url('account/update-profile') ?>" method="POST" enctype="multipart/form-data">
-        <?= csrf_field() ?>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="<?= base_url('assets/images/logo-transparent.png') ?>" alt="Logo">
+            <span>Bimbel Harapan</span>
+        </div>
+        <a href="<?= $profileUrl ?>" class="btn-back">← Kembali ke Profil</a>
+    </nav>
 
-        <div class="profile-photo-container">
-            <div class="profile-icon" id="defaultIcon" style="<?= session()->get('photo') ? 'display: none;' : '' ?>">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="35" r="15" stroke="black" stroke-width="3" />
-                    <path d="M25 85C25 68 35 60 50 60C65 60 75 68 75 85" stroke="black" stroke-width="3" />
-                </svg>
+    <div class="page-body">
+        <div class="profile-card">
+
+            <!-- Card Header dengan avatar upload -->
+            <div class="card-header">
+                <label for="photoInput">
+                    <div class="avatar-upload-wrap" title="Klik untuk ganti foto">
+                        <div id="defaultIcon" style="<?= session()->get('photo') ? 'display:none' : '' ?>;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                            <span class="avatar-initial"><?= strtoupper(substr($user['nama'] ?? 'U', 0, 1)) ?></span>
+                        </div>
+                        <img id="profilePhoto"
+                             src="<?= session()->get('photo') ? base_url('uploads/profile/'.session()->get('photo')) : '' ?>"
+                             style="<?= session()->get('photo') ? '' : 'display:none' ?>"
+                             alt="Foto Profil">
+                        <div class="overlay-label">
+                            <span>📷</span>
+                            <span>Ganti Foto</span>
+                        </div>
+                    </div>
+                </label>
+                <h2>Edit Profil</h2>
+                <p>Perbarui informasi akun Anda</p>
             </div>
-            <img id="profilePhoto" class="profile-photo" src="<?= session()->get('photo') ? base_url('uploads/profile/' . session()->get('photo')) : '' ?>" style="<?= session()->get('photo') ? '' : 'display: none;' ?>" alt="Profile Photo">
-            <label for="photoInput" class="photo-upload-overlay">
-                <span>Ubah Foto</span>
-            </label>
-            <input type="file" id="photoInput" name="photo" accept="image/*">
+
+            <!-- Form -->
+            <form class="form-body" action="<?= base_url('account/update-profile') ?>" method="POST" enctype="multipart/form-data">
+                <?= csrf_field() ?>
+                <input type="file" id="photoInput" name="photo" accept="image/*">
+
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap <span class="req">*</span></label>
+                    <input type="text" id="nama" name="nama" class="input-field"
+                           value="<?= esc($user['nama'] ?? '') ?>" placeholder="Masukkan nama lengkap" required>
+                    <?php if (isset($validation) && $validation->hasError('nama')): ?>
+                        <div class="error-message"><?= $validation->getError('nama') ?></div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email <span class="req">*</span></label>
+                    <input type="email" id="email" name="email" class="input-field"
+                           value="<?= esc($user['email'] ?? '') ?>" placeholder="contoh@email.com" required>
+                    <?php if (isset($validation) && $validation->hasError('email')): ?>
+                        <div class="error-message"><?= $validation->getError('email') ?></div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="form-group">
+                    <label for="nomor_hp">Nomor HP <span class="req">*</span></label>
+                    <input type="tel" id="nomor_hp" name="nomor_hp" class="input-field"
+                           value="<?= esc($user['nomor_hp'] ?? '') ?>" placeholder="08xxxxxxxxxx" required>
+                    <?php if (isset($validation) && $validation->hasError('nomor_hp')): ?>
+                        <div class="error-message"><?= $validation->getError('nomor_hp') ?></div>
+                    <?php endif; ?>
+                </div>
+
+                <hr class="divider">
+
+                <div class="form-group">
+                    <label for="password">Password Baru</label>
+                    <input type="password" id="password" name="password" class="input-field"
+                           placeholder="Kosongkan jika tidak ingin ubah">
+                    <small>* Biarkan kosong jika tidak ingin mengubah password</small>
+                    <?php if (isset($validation) && $validation->hasError('password')): ?>
+                        <div class="error-message"><?= $validation->getError('password') ?></div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="form-actions">
+                    <a href="<?= $profileUrl ?>" class="btn-cancel">Batal</a>
+                    <button type="submit" class="btn-save">💾 Simpan Perubahan</button>
+                </div>
+            </form>
+
         </div>
-
-        <div class="form-group">
-            <label for="nama" class="form-label">Nama</label>
-            <input type="text" id="nama" name="nama" class="input-field" value="<?= $user['nama'] ?? '' ?>" placeholder="Masukkan nama lengkap">
-            <?php if (isset($validation) && $validation->hasError('nama')): ?>
-                <div class="error-message"><?= $validation->getError('nama') ?></div>
-            <?php endif; ?>
-        </div>
-
-        <div class="form-group">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" id="email" name="email" class="input-field" value="<?= $user['email'] ?? '' ?>" placeholder="contoh@email.com">
-            <?php if (isset($validation) && $validation->hasError('email')): ?>
-                <div class="error-message"><?= $validation->getError('email') ?></div>
-            <?php endif; ?>
-        </div>
-
-        <div class="form-group">
-            <label for="nomor_hp" class="form-label">Nomor HP</label>
-            <input type="tel" id="nomor_hp" name="nomor_hp" class="input-field" value="<?= $user['nomor_hp'] ?? '' ?>" placeholder="08xxxxxxxxxx">
-            <?php if (isset($validation) && $validation->hasError('nomor_hp')): ?>
-                <div class="error-message"><?= $validation->getError('nomor_hp') ?></div>
-            <?php endif; ?>
-        </div>
-
-        <div class="form-group">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" name="password" class="input-field" value="********" placeholder="Masukkan password baru">
-            <small>* Kosongkan jika tidak ingin mengubah password</small>
-            <?php if (isset($validation) && $validation->hasError('password')): ?>
-                <div class="error-message"><?= $validation->getError('password') ?></div>
-            <?php endif; ?>
-        </div>
-
-        <button type="submit" class="edit-button">Save Profil</button>
-    </form>
-
+    </div>
 
     <script>
-        // Handle photo upload preview
-        document.getElementById('photoInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    const profilePhoto = document.getElementById('profilePhoto');
-                    const defaultIcon = document.getElementById('defaultIcon');
-
-                    profilePhoto.src = e.target.result;
-                    profilePhoto.style.display = 'block';
-                    defaultIcon.style.display = 'none';
-                }
-
-                reader.readAsDataURL(file);
-            }
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const img = document.getElementById('profilePhoto');
+                const def = document.getElementById('defaultIcon');
+                img.src = ev.target.result;
+                img.style.display = 'block';
+                if (def) def.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
         });
     </script>
 </body>
-
 </html>

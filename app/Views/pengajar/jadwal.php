@@ -1,51 +1,91 @@
 <?= $this->extend('layouts/sidebar_pengajar') ?>
 <?= $this->section('content') ?>
 
-<div class="container">
-    <div class="title-container">
-        <h1>Jadwal & Kelas Saya</h1>
+<div class="page-header">
+    <h1>📅 Jadwal & Kelas Saya</h1>
+</div>
+
+<?php
+    $hariOrder = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+    $byHari = [];
+    foreach ($kelasList as $k) {
+        $byHari[$k['hari']][] = $k;
+    }
+?>
+
+<?php if (empty($kelasList)): ?>
+    <div class="tbl-wrap">
+        <div class="empty-state"><div class="icon">📭</div><p>Belum ada kelas yang dijadwalkan untuk Anda.</p></div>
+    </div>
+<?php else: ?>
+    <!-- Stats -->
+    <div class="stat-cards" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));">
+        <div class="stat-card">
+            <div class="stat-number"><?= count($kelasList) ?></div>
+            <div class="stat-label">Total Kelas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number"><?= count($byHari) ?></div>
+            <div class="stat-label">Hari Aktif</div>
+        </div>
+        <?php $totalSiswaSlot = array_sum(array_column($kelasList,'terisi')); ?>
+        <div class="stat-card">
+            <div class="stat-number"><?= $totalSiswaSlot ?></div>
+            <div class="stat-label">Total Siswa</div>
+        </div>
     </div>
 
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Program</th>
-                    <th>Jenjang / Kelas</th>
-                    <th>Hari</th>
-                    <th>Jam Mulai</th>
-                    <th>Jam Selesai</th>
-                    <th>Kapasitas</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($kelasList)): ?>
-                    <tr><td colspan="7" style="text-align:center; color:#718096; padding:30px;">Belum ada kelas yang diampu</td></tr>
-                <?php else: ?>
-                    <?php foreach ($kelasList as $i => $k): ?>
+    <?php foreach ($hariOrder as $hari): ?>
+        <?php if (!isset($byHari[$hari])) continue; ?>
+        <div style="margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <span style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:700;">
+                    📅 <?= $hari ?>
+                </span>
+                <span style="font-size:.8rem;color:#718096;"><?= count($byHari[$hari]) ?> kelas</span>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
                         <tr>
-                            <td><?= $i + 1 ?></td>
-                            <td><?= esc($k['nama_program']) ?></td>
-                            <td>
-                                <span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:12px;">
-                                    <?= $k['tingkat'] ?> Kelas <?= $k['kelas_program'] ?>
-                                </span>
-                            </td>
-                            <td><?= esc($k['hari']) ?></td>
-                            <td><?= substr($k['jam_mulai'],0,5) ?></td>
-                            <td><?= substr($k['jam_selesai'],0,5) ?></td>
-                            <td>
-                                <span style="font-weight:600;color:<?= $k['terisi']>=$k['kuota']?'#dc2626':'#059669' ?>">
-                                    <?= $k['terisi'] ?>/<?= $k['kuota'] ?> siswa
-                                </span>
-                            </td>
+                            <th>#</th>
+                            <th>Program</th>
+                            <th>Jenjang</th>
+                            <th>Jam</th>
+                            <th>Durasi</th>
+                            <th>Kapasitas</th>
                         </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($byHari[$hari] as $i => $k): ?>
+                            <?php
+                                $mulai = strtotime($k['jam_mulai']);
+                                $selesai = strtotime($k['jam_selesai']);
+                                $menit = ($selesai - $mulai) / 60;
+                                $jam = floor($menit/60); $sisa = $menit % 60;
+                                $durStr = $menit >= 60 ? ($jam.'j'.($sisa ? ' '.$sisa.'m' : '')) : ($menit.'m');
+                            ?>
+                            <tr>
+                                <td><?= $i + 1 ?></td>
+                                <td><strong><?= esc($k['nama_program']) ?></strong></td>
+                                <td><span class="badge badge-<?= $k['tingkat'] ?>"><?= $k['tingkat'] ?> Kls <?= $k['kelas_program'] ?></span></td>
+                                <td style="white-space:nowrap;">🕐 <?= substr($k['jam_mulai'],0,5) ?> → <?= substr($k['jam_selesai'],0,5) ?> WIB</td>
+                                <td><span style="background:#f1f5f9;padding:2px 8px;border-radius:8px;font-size:.78rem;color:#4a5568;">⏱ <?= trim($durStr) ?></span></td>
+                                <td>
+                                    <span class="<?= $k['terisi'] >= $k['kuota'] ? 'cap-full' : 'cap-ok' ?>">
+                                        <?= $k['terisi'] ?>/<?= $k['kuota'] ?> siswa
+                                    </span>
+                                    <?php if ($k['terisi'] >= $k['kuota']): ?>
+                                        <span style="background:#fee2e2;color:#991b1b;padding:1px 7px;border-radius:10px;font-size:.72rem;font-weight:600;margin-left:4px;">PENUH</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php endforeach; ?>
+<?php endif; ?>
 
 <?= $this->endSection() ?>

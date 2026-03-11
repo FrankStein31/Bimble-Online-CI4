@@ -1,431 +1,205 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile View</title>
+    <title>Profil Akun - Bimbel Harapan</title>
     <style>
-        /* Modern Profile View CSS */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
-    padding: 20px;
-}
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; }
+        body { min-height:100vh; background:#f8fafc; display:flex; flex-direction:column; }
 
-/* Profile Card */
-.profile-card {
-    background: white;
-    width: 100%;
-    max-width: 450px;
-    border-radius: 16px;
-    padding: 40px 32px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: 1px solid #e2e8f0;
-    position: relative;
-    overflow: hidden;
-}
+        /* Navbar */
+        .navbar {
+            background:linear-gradient(135deg,#667eea,#764ba2);
+            padding:13px 24px; display:flex; justify-content:space-between;
+            align-items:center; box-shadow:0 2px 12px rgba(102,126,234,.4);
+            position:sticky; top:0; z-index:100;
+        }
+        .navbar-brand { display:flex; align-items:center; gap:12px; }
+        .navbar-brand img { width:44px; height:44px; border-radius:8px; object-fit:cover; }
+        .navbar-brand span { color:white; font-weight:700; font-size:1rem; }
+        .btn-back {
+            display:inline-flex; align-items:center; gap:6px;
+            background:rgba(255,255,255,.2); color:white;
+            text-decoration:none; padding:7px 16px; border-radius:8px;
+            font-size:.875rem; font-weight:600; border:1px solid rgba(255,255,255,.3);
+            transition:.2s;
+        }
+        .btn-back:hover { background:rgba(255,255,255,.3); }
 
-.profile-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-}
+        /* Page body */
+        .page-body {
+            flex:1; display:flex; justify-content:center; align-items:flex-start;
+            padding:40px 20px;
+        }
 
-/* Profile Photo Container */
-.profile-photo-container {
-    width: 140px;
-    height: 140px;
-    margin-bottom: 24px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-    border: 4px solid transparent;
-    background-clip: padding-box;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    position: relative;
-}
+        /* Card */
+        .profile-card {
+            background:white; border-radius:16px; width:100%; max-width:480px;
+            box-shadow:0 8px 30px rgba(0,0,0,.1); border:1px solid #e2e8f0;
+            overflow:hidden; animation:slideUp .4s ease;
+        }
+        @keyframes slideUp { from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
 
-.profile-photo-container::before {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 50%;
-    z-index: -1;
-}
+        /* Card header */
+        .card-header {
+            background:linear-gradient(135deg,#667eea,#764ba2);
+            padding:28px 28px 20px; text-align:center; position:relative;
+        }
+        .avatar-wrap {
+            width:100px; height:100px; border-radius:50%; margin:0 auto 14px;
+            border:4px solid rgba(255,255,255,.4); overflow:hidden;
+            background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center;
+            box-shadow:0 4px 16px rgba(0,0,0,.2);
+        }
+        .avatar-wrap img { width:100%; height:100%; object-fit:cover; }
+        .avatar-initial {
+            font-size:2.4rem; font-weight:700; color:white; line-height:1;
+        }
+        .card-header h2 { color:white; font-size:1.3rem; font-weight:700; margin-bottom:4px; }
+        .role-badge {
+            display:inline-block; background:rgba(255,255,255,.25); color:white;
+            padding:3px 12px; border-radius:20px; font-size:.78rem; font-weight:600;
+        }
 
-.profile-photo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
+        /* Info list */
+        .info-list { padding:0 28px 8px; }
+        .info-item {
+            display:flex; align-items:center; gap:14px; padding:15px 0;
+            border-bottom:1px solid #f1f5f9;
+        }
+        .info-item:last-child { border-bottom:none; }
+        .info-icon { font-size:1.1rem; width:28px; text-align:center; flex-shrink:0; }
+        .info-content { flex:1; }
+        .info-label { font-size:.73rem; font-weight:600; color:#a0aec0; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; }
+        .info-value { font-size:.95rem; font-weight:500; color:#2d3748; }
+        .info-value.muted { color:#a0aec0; letter-spacing:2px; font-size:1rem; }
 
-.profile-photo:hover {
-    transform: scale(1.05);
-}
+        /* Jenjang badge */
+        .badge { display:inline-block; padding:2px 10px; border-radius:12px; font-size:.78rem; font-weight:600; }
+        .badge-SD  { background:#dbeafe; color:#1d4ed8; }
+        .badge-SMP { background:#dcfce7; color:#166534; }
+        .badge-SMA { background:#fef3c7; color:#92400e; }
+        .badge-admin { background:#ede9fe; color:#5b21b6; }
 
-/* Profile Icon */
-.profile-icon {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-}
+        /* Footer */
+        .card-footer { padding:20px 28px 28px; }
+        .btn-edit {
+            display:flex; justify-content:center; align-items:center; gap:8px;
+            background:linear-gradient(135deg,#667eea,#764ba2); color:white;
+            text-decoration:none; padding:12px; border-radius:10px;
+            font-size:.9rem; font-weight:600; width:100%;
+            box-shadow:0 3px 12px rgba(102,126,234,.35); transition:.2s;
+        }
+        .btn-edit:hover { opacity:.9; transform:translateY(-1px); box-shadow:0 5px 16px rgba(102,126,234,.45); }
 
-.profile-icon svg {
-    width: 50%;
-    height: 50%;
-    stroke: #667eea;
-    stroke-width: 2;
-}
+        /* Flash */
+        .flash { margin:16px 28px 0; padding:11px 14px; border-radius:8px; font-size:.875rem; font-weight:500; }
+        .flash-success { background:#f0fff4; color:#276749; border-left:4px solid #48bb78; }
+        .flash-error   { background:#fff5f5; color:#c53030; border-left:4px solid #fc8181; }
 
-/* Profile Name */
-.profile-name {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #2d3748;
-    text-align: center;
-    line-height: 1.2;
-}
-
-/* Profile Info Container */
-.profile-info-container {
-    width: 100%;
-    margin-top: 24px;
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #e2e8f0;
-}
-
-.profile-info-item {
-    padding: 16px 0;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    transition: background-color 0.2s ease;
-}
-
-.profile-info-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.profile-info-item:first-child {
-    padding-top: 0;
-}
-
-.profile-info-item:hover {
-    background: rgba(102, 126, 234, 0.05);
-    margin: 0 -12px;
-    padding-left: 12px;
-    padding-right: 12px;
-    border-radius: 8px;
-}
-
-/* Info Labels and Values */
-.info-label {
-    font-weight: 600;
-    min-width: 100px;
-    color: #4a5568;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.info-value {
-    flex: 1;
-    color: #2d3748;
-    font-size: 1rem;
-    font-weight: 500;
-    margin-left: 16px;
-}
-
-/* Special styling for password field */
-.profile-info-item:last-child .info-value {
-    font-family: monospace;
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-    color: #718096;
-}
-
-/* Edit Button */
-.edit-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 14px 32px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 32px;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.edit-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.6s ease;
-}
-
-.edit-button:hover::before {
-    left: 100%;
-}
-
-.edit-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-.edit-button::after {
-    content: "✏️";
-    margin-left: 4px;
-}
-
-/* Icon Indicators for Info Items */
-.profile-info-item::before {
-    content: '';
-    width: 20px;
-    height: 20px;
-    margin-right: 12px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    opacity: 0.6;
-}
-
-.profile-info-item:nth-child(1)::before {
-    content: "📧";
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.profile-info-item:nth-child(2)::before {
-    content: "📱";
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.profile-info-item:nth-child(3)::before {
-    content: "🔒";
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Responsive Design */
-@media screen and (max-width: 768px) {
-    body {
-        padding: 16px;
-    }
-    
-    .profile-card {
-        max-width: 100%;
-        padding: 32px 24px;
-        border-radius: 12px;
-    }
-    
-    .profile-photo-container {
-        width: 120px;
-        height: 120px;
-        margin-bottom: 20px;
-    }
-    
-    .profile-name {
-        font-size: 1.6rem;
-    }
-    
-    .profile-info-container {
-        margin-top: 20px;
-        padding: 16px;
-        border-radius: 10px;
-    }
-    
-    .profile-info-item {
-        padding: 12px 0;
-    }
-    
-    .info-label {
-        min-width: 80px;
-        font-size: 0.85rem;
-    }
-    
-    .info-value {
-        font-size: 0.95rem;
-        margin-left: 12px;
-    }
-    
-    .edit-button {
-        padding: 12px 28px;
-        font-size: 14px;
-        margin-top: 24px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .profile-card {
-        padding: 28px 20px;
-        border-radius: 10px;
-    }
-    
-    .profile-photo-container {
-        width: 100px;
-        height: 100px;
-        margin-bottom: 16px;
-    }
-    
-    .profile-name {
-        font-size: 1.4rem;
-        margin-bottom: 6px;
-    }
-    
-    .profile-info-container {
-        padding: 14px;
-    }
-    
-    .profile-info-item {
-        padding: 10px 0;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-    }
-    
-    .info-label {
-        min-width: auto;
-        margin-bottom: 4px;
-    }
-    
-    .info-value {
-        margin-left: 0;
-        width: 100%;
-    }
-    
-    .profile-info-item::before {
-        display: none;
-    }
-    
-    .edit-button {
-        padding: 10px 24px;
-        font-size: 13px;
-        margin-top: 20px;
-    }
-}
-
-/* Loading Animation */
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.profile-card {
-    animation: slideInUp 0.6s ease;
-}
-
-/* Focus States for Accessibility */
-.edit-button:focus {
-    outline: 2px solid #667eea;
-    outline-offset: 2px;
-}
-
-/* Hover effect for profile photo */
-.profile-photo-container:hover {
-    transform: scale(1.02);
-    transition: transform 0.3s ease;
-}
-
-/* Additional Visual Enhancements */
-.profile-info-item:hover .info-label {
-    color: #667eea;
-    transition: color 0.2s ease;
-}
-
-.profile-info-item:hover .info-value {
-    color: #2d3748;
-    transition: color 0.2s ease;
-}
+        @media (max-width:480px) {
+            .page-body { padding:20px 12px; align-items:flex-start; }
+            .info-list, .card-footer { padding-left:18px; padding-right:18px; }
+            .flash { margin-left:18px; margin-right:18px; }
+        }
     </style>
 </head>
-
 <body>
-    <div class="profile-card">
-        <div class="profile-photo-container">
-            <?php if (isset($user['photo']) && $user['photo']): ?>
-                <!-- Jika ada foto profil, tampilkan foto -->
-                <img class="profile-photo" src="<?= base_url('uploads/profile/' . $user['photo']) ?>" alt="Profile Photo">
-            <?php else: ?>
-                <!-- Jika tidak ada foto, tampilkan ikon default -->
-                <div class="profile-icon">
-                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="50" cy="35" r="15" stroke="black" stroke-width="3" />
-                        <path d="M25 85C25 68 35 60 50 60C65 60 75 68 75 85" stroke="black" stroke-width="3" />
-                    </svg>
-                </div>
+    <?php
+        $role = session()->get('role');
+        $dashboardUrl = $role === 'admin' ? base_url('dashboard') : ($role === 'pengajar' ? base_url('pengajar/dashboard') : base_url('siswa/dashboard'));
+        $roleLabel = $role === 'admin' ? 'Admin' : ($role === 'pengajar' ? 'Pengajar' : 'Siswa');
+        $jabatan = session()->get('jabatan') ?? session()->get('tingkat') ?? null;
+    ?>
+
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="<?= base_url('assets/images/logo-transparent.png') ?>" alt="Logo">
+            <span>Bimbel Harapan</span>
+        </div>
+        <a href="<?= $dashboardUrl ?>" class="btn-back">← Dashboard</a>
+    </nav>
+
+    <div class="page-body">
+        <div class="profile-card">
+
+            <?php if (session()->getFlashdata('success')): ?>
+                <div class="flash flash-success">✅ <?= session()->getFlashdata('success') ?></div>
             <?php endif; ?>
+            <?php if (session()->getFlashdata('error')): ?>
+                <div class="flash flash-error">❌ <?= session()->getFlashdata('error') ?></div>
+            <?php endif; ?>
+
+            <!-- Header -->
+            <div class="card-header">
+                <div class="avatar-wrap">
+                    <?php if (!empty($user['photo'])): ?>
+                        <img src="<?= base_url('uploads/profile/'.$user['photo']) ?>" alt="Foto">
+                    <?php else: ?>
+                        <span class="avatar-initial"><?= strtoupper(substr($user['nama'], 0, 1)) ?></span>
+                    <?php endif; ?>
+                </div>
+                <h2><?= esc($user['nama']) ?></h2>
+                <span class="role-badge">
+                    <?= $roleLabel ?>
+                    <?php if ($jabatan): ?> · <?= $jabatan ?><?php endif; ?>
+                </span>
+            </div>
+
+            <!-- Info list -->
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="info-icon">📧</span>
+                    <div class="info-content">
+                        <div class="info-label">Email</div>
+                        <div class="info-value"><?= esc($user['email']) ?></div>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="info-icon">📱</span>
+                    <div class="info-content">
+                        <div class="info-label">Nomor HP</div>
+                        <div class="info-value"><?= esc($user['nomor_hp']) ?></div>
+                    </div>
+                </div>
+                <?php if (!empty($user['tingkat']) && $role === 'siswa'): ?>
+                <div class="info-item">
+                    <span class="info-icon">🎓</span>
+                    <div class="info-content">
+                        <div class="info-label">Jenjang</div>
+                        <div class="info-value">
+                            <span class="badge badge-<?= $user['tingkat'] ?>"><?= $user['tingkat'] ?></span>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <?php if (!empty($user['jabatan']) && $role === 'pengajar'): ?>
+                <div class="info-item">
+                    <span class="info-icon">👨‍🏫</span>
+                    <div class="info-content">
+                        <div class="info-label">Mengajar</div>
+                        <div class="info-value">
+                            <span class="badge badge-<?= $user['jabatan'] ?>">Guru <?= $user['jabatan'] ?></span>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <div class="info-item">
+                    <span class="info-icon">🔒</span>
+                    <div class="info-content">
+                        <div class="info-label">Password</div>
+                        <div class="info-value muted">••••••••</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="card-footer">
+                <a href="<?= base_url('account/edit-profile') ?>" class="btn-edit">✏️ Edit Profil</a>
+            </div>
+
         </div>
-
-        <h2 class="profile-name"><?= $user['nama'] ?></h2>
-
-        <div class="profile-info-container">
-            <div class="profile-info-item">
-                <div class="info-label">Email</div>
-                <div class="info-value"><?= $user['email'] ?></div>
-            </div>
-            <div class="profile-info-item">
-                <div class="info-label">Nomor HP</div>
-                <div class="info-value"><?= $user['nomor_hp'] ?></div>
-            </div>
-            <div class="profile-info-item">
-                <div class="info-label">Password</div>
-                <div class="info-value">••••••••</div>
-            </div>
-        </div>
-
-        <a href="<?= base_url('account/edit-profile') ?>" class="edit-button" style="text-decoration: none;">Edit Profil</a>
     </div>
 </body>
-
 </html>

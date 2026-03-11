@@ -64,9 +64,18 @@ class PengajarController extends BaseController
     public function hasilBelajar()
     {
         $pengajarId = session()->get('user_id');
-        $hasil      = $this->hasilBelajarModel->getByPengajar($pengajarId);
-        $siswa      = $this->getSiswaSaya($pengajarId);
-        $program    = $this->programModel->findAll();
+        $jabatan    = session()->get('jabatan'); // SD / SMP / SMA
+
+        $hasil   = $this->hasilBelajarModel->getByPengajar($pengajarId);
+        $siswa   = $this->getSiswaSaya($pengajarId);
+
+        // Filter program sesuai jenjang pengajar yang login
+        $programQuery = $this->programModel;
+        if (!empty($jabatan)) {
+            $program = $programQuery->where('tingkat', $jabatan)->findAll();
+        } else {
+            $program = $programQuery->findAll();
+        }
 
         return view('pengajar/hasil_belajar', [
             'hasil'   => $hasil,
