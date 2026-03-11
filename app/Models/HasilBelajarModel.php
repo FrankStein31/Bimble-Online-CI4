@@ -61,7 +61,7 @@ class HasilBelajarModel extends Model
 
     public function getAll()
     {
-        return $this->select('hasil_belajar.*, siswa.nama as nama_siswa, pengajar.nama as nama_pengajar, program_bimbel.nama_program, program_bimbel.tingkat, program_bimbel.kelas')
+        return $this->select('hasil_belajar.*, siswa.nama as nama_siswa, pengajar.nama as nama_pengajar, program_bimbel.nama_program, program_bimbel.tingkat as tingkat_program, program_bimbel.kelas')
             ->join('user as siswa', 'siswa.user_id = hasil_belajar.siswa_id')
             ->join('user as pengajar', 'pengajar.user_id = hasil_belajar.pengajar_id')
             ->join('program_bimbel', 'program_bimbel.program_id = hasil_belajar.program_id')

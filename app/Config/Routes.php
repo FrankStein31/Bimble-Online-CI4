@@ -46,9 +46,14 @@ $routes->group('/dashboard', ['filter' => 'auth:admin'], function ($routes) {
     $routes->get('siswa-ptn', 'SiswaPtnController::index');
     $routes->get('transaksi', 'TransaksiController::transaksi');
     $routes->get('user', 'UserController::index');
-    $routes->get('hasil-belajar', 'HasilBelajarController::index');
+    // Laporan = hasil belajar + cetak (menu tunggal, menggantikan hasil-belajar terpisah)
     $routes->get('laporan', 'LaporanController::index');
     $routes->get('laporan/cetak', 'LaporanController::cetak');
+    $routes->post('laporan/tambah', 'LaporanController::tambahHasil');
+    $routes->post('laporan/edit/(:num)', 'LaporanController::editHasil/$1');
+    $routes->get('laporan/hapus/(:num)', 'LaporanController::hapusHasil/$1');
+    // Redirect lama hasil-belajar → laporan
+    $routes->get('hasil-belajar', 'LaporanController::index');
 });
 
 // Routes CRUD untuk Siswa PTN
