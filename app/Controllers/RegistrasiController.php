@@ -112,8 +112,16 @@ class RegistrasiController extends ResourceController
 
     public function paketAktif()
     {
-        $userId   = session()->get('user_id');
+        $userId    = session()->get('user_id');
         $transaksi = $this->transaksiModel->getTransaksiByUser($userId);
+
+        // Handle Midtrans redirect params
+        $midtransStatus = $this->request->getGet('midtrans');
+        if ($midtransStatus === 'success') {
+            session()->setFlashdata('success', '🎉 Pembayaran berhasil! Program kamu sudah aktif.');
+        } elseif ($midtransStatus === 'pending') {
+            session()->setFlashdata('success', '⏳ Pembayaran sedang diproses. Status akan diperbarui otomatis.');
+        }
 
         return view('pembayaran/paketaktif', ['transaksi' => $transaksi]);
     }

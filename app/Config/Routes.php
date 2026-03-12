@@ -33,11 +33,21 @@ $routes->group('', ['filter' => 'auth:siswa'], function ($routes) {
     $routes->get('/jadwal', 'Homepage::jadwal');
     $routes->get('/registrasi-pembayaran', 'RegistrasiController::registrasiPembayaran');
     $routes->post('/registrasi-pembayaran/submit', 'RegistrasiController::submit');
+    $routes->post('/registrasi-pembayaran/paket-aktif', 'RegistrasiController::paketAktif');
     $routes->get('/registrasi-pembayaran/paket-aktif', 'RegistrasiController::paketAktif');
     $routes->get('/registrasi-pembayaran/transfer-bank', 'RegistrasiController::transferBank');
     $routes->get('/registrasi-pembayaran/history', 'RegistrasiController::history');
     $routes->get('/rekap-belajar', 'RekkapBelajarController::index');
+    // Midtrans: create token (AJAX, requires login)
+    $routes->post('/midtrans/token', 'MidtransController::token');
 });
+// Midtrans notification webhook (no auth — called by Midtrans server)
+$routes->post('/midtrans/notify', 'MidtransController::notify');
+// Midtrans finish — called from onSuccess JS (handles localhost where webhook can't reach)
+$routes->post('/midtrans/finish', 'MidtransController::finish');
+// Midtrans cancel (AJAX, called when user closes popup)
+$routes->post('/midtrans/cancel', 'MidtransController::cancel');
+
 // Halaman dashboard - khusus admin
 $routes->group('/dashboard', ['filter' => 'auth:admin'], function ($routes) {
     $routes->get('jadwal', 'JadwalController::index');

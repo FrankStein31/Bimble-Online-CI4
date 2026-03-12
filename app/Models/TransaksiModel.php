@@ -20,7 +20,9 @@ class TransaksiModel extends Model
         'pengajar_id',
         'tagihan',
         'photo_bukti',
-        'status'
+        'status',
+        'midtrans_order_id',
+        'metode_bayar',
     ];
 
     // Dates

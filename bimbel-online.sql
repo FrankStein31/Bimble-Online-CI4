@@ -36,9 +36,14 @@ CREATE TABLE `hasil_belajar` (
   CONSTRAINT `hasil_belajar_pengajar_id_foreign` FOREIGN KEY (`pengajar_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `hasil_belajar_program_id_foreign` FOREIGN KEY (`program_id`) REFERENCES `program_bimbel` (`program_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `hasil_belajar_siswa_id_foreign` FOREIGN KEY (`siswa_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `hasil_belajar` */
+
+insert  into `hasil_belajar`(`hasil_id`,`siswa_id`,`pengajar_id`,`program_id`,`mata_pelajaran`,`nilai`,`catatan`,`tanggal`,`created_at`,`updated_at`) values 
+(2,8,7,10,'Matematika',95.00,'pelajari lagi','2026-03-11','2026-03-11 14:06:44','2026-03-11 14:06:44'),
+(3,4,7,10,'Matematika',50.00,'belajar','2026-03-11','2026-03-11 14:08:23','2026-03-11 14:08:23'),
+(4,2,5,2,'indo',80.00,'sip','2026-03-11','2026-03-11 14:35:44','2026-03-11 14:35:44');
 
 /*Table structure for table `jadwal` */
 
@@ -50,9 +55,26 @@ CREATE TABLE `jadwal` (
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`jadwal_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `jadwal` */
+
+insert  into `jadwal`(`jadwal_id`,`hari`,`jam_mulai`,`jam_selesai`,`created_at`,`updated_at`) values 
+(47,'Senin','08:00','10:00',NULL,NULL),
+(48,'Senin','10:30','12:30',NULL,NULL),
+(49,'Senin','14:00','16:00',NULL,NULL),
+(50,'Selasa','08:00','10:00',NULL,NULL),
+(51,'Selasa','10:30','12:30',NULL,NULL),
+(52,'Selasa','14:00','16:00',NULL,NULL),
+(53,'Rabu','08:00','10:00',NULL,NULL),
+(54,'Rabu','10:30','12:30',NULL,NULL),
+(55,'Kamis','08:00','10:00',NULL,NULL),
+(56,'Kamis','14:00','16:00',NULL,NULL),
+(57,'Jumat','08:00','10:00',NULL,NULL),
+(58,'Jumat','14:00','16:00',NULL,NULL),
+(59,'Sabtu','08:00','10:00',NULL,NULL),
+(60,'Sabtu','10:30','12:30',NULL,NULL),
+(61,'Sabtu','14:00','16:00',NULL,NULL);
 
 /*Table structure for table `kelas_bimbel` */
 
@@ -66,9 +88,16 @@ CREATE TABLE `kelas_bimbel` (
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`kelas_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `kelas_bimbel` */
+
+insert  into `kelas_bimbel`(`kelas_id`,`program_id`,`jadwal_id`,`pengajar_id`,`kuota`,`terisi`,`created_at`,`updated_at`) values 
+(4,10,48,7,5,2,'2026-03-11 08:09:51','2026-03-11 08:29:37'),
+(5,2,47,5,5,1,'2026-03-11 14:11:41','2026-03-11 14:11:41'),
+(6,9,52,7,5,1,'2026-03-12 04:06:57','2026-03-12 04:06:57'),
+(7,5,50,6,5,1,'2026-03-12 04:13:25','2026-03-12 04:13:25'),
+(8,6,51,6,5,1,'2026-03-12 04:14:35','2026-03-12 04:14:35');
 
 /*Table structure for table `migrations` */
 
@@ -81,7 +110,7 @@ CREATE TABLE `migrations` (
   `time` int NOT NULL,
   `batch` int unsigned NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `migrations` */
 
@@ -97,7 +126,9 @@ insert  into `migrations`(`id`,`version`,`class`,`group`,`namespace`,`time`,`bat
 (9,'2026-03-11-000001','App\\Database\\Migrations\\AlterUserAddTingkat','default','App',1773200685,3),
 (10,'2026-03-11-000002','App\\Database\\Migrations\\CreateKelasBimbelTable','default','App',1773200685,3),
 (11,'2026-03-11-000003','App\\Database\\Migrations\\AlterTransaksiAddKelasJadwal','default','App',1773200685,3),
-(12,'2026-03-11-000004','App\\Database\\Migrations\\AlterUserAddJabatan','default','App',1773202378,4);
+(12,'2026-03-11-000004','App\\Database\\Migrations\\AlterUserAddJabatan','default','App',1773202378,4),
+(13,'2026-03-11-000005','App\\Database\\Migrations\\CreateProgramJadwalTable','default','App',1773210365,5),
+(14,'2026-03-12-000001','App\\Database\\Migrations\\AlterTransaksiAddMidtrans','default','App',1773286572,6);
 
 /*Table structure for table `no_rekening` */
 
@@ -163,7 +194,55 @@ insert  into `program_bimbel`(`program_id`,`nama_program`,`durasi`,`tingkat`,`ke
 (7,'Matematika SMA IPA','3 jam/pertemuan','SMA','10-12',250000.00,'Program bimbingan belajar matematika untuk siswa SMA jurusan IPA',NULL,NULL),
 (8,'Fisika SMA','2.5 jam/pertemuan','SMA','10-12',230000.00,'Program bimbingan belajar fisika untuk siswa SMA',NULL,NULL),
 (9,'Kimia SMA','2.5 jam/pertemuan','SMA','10-12',230000.00,'Program bimbingan belajar kimia untuk siswa SMA',NULL,NULL),
-(10,'Persiapan UTBK','4 jam/pertemuan','SMA','12',350000.00,'Program intensif persiapan UTBK untuk masuk PTN',NULL,NULL);
+(10,'Persiapan UTBK','2 jam/pertemuan','SMA','12',350000.00,'Program intensif persiapan UTBK untuk masuk PTN',NULL,NULL);
+
+/*Table structure for table `program_jadwal` */
+
+CREATE TABLE `program_jadwal` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `program_id` int unsigned NOT NULL,
+  `jadwal_id` int unsigned NOT NULL,
+  `urutan` tinyint NOT NULL DEFAULT '1' COMMENT '1=Pertemuan ke-1, 2=ke-2, 3=ke-3 dalam seminggu',
+  PRIMARY KEY (`id`),
+  KEY `program_jadwal_jadwal_id_foreign` (`jadwal_id`),
+  KEY `program_id_jadwal_id` (`program_id`,`jadwal_id`),
+  CONSTRAINT `program_jadwal_jadwal_id_foreign` FOREIGN KEY (`jadwal_id`) REFERENCES `jadwal` (`jadwal_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `program_jadwal_program_id_foreign` FOREIGN KEY (`program_id`) REFERENCES `program_bimbel` (`program_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Data for the table `program_jadwal` */
+
+insert  into `program_jadwal`(`id`,`program_id`,`jadwal_id`,`urutan`) values 
+(1,1,47,1),
+(2,1,53,2),
+(3,1,57,3),
+(4,2,47,1),
+(5,2,53,2),
+(6,2,57,3),
+(7,3,48,1),
+(8,3,54,2),
+(9,3,57,3),
+(10,4,50,1),
+(11,4,55,2),
+(12,4,59,3),
+(13,5,50,1),
+(14,5,55,2),
+(15,5,60,3),
+(16,6,51,1),
+(17,6,56,2),
+(18,6,60,3),
+(19,7,49,1),
+(20,7,52,2),
+(21,7,61,3),
+(22,8,49,1),
+(23,8,58,2),
+(24,8,61,3),
+(25,9,52,1),
+(26,9,58,2),
+(27,9,61,3),
+(28,10,48,1),
+(29,10,51,2),
+(30,10,61,3);
 
 /*Table structure for table `siswa_diterima_ptn` */
 
@@ -204,6 +283,8 @@ CREATE TABLE `transaksi` (
   `pengajar_id` int unsigned DEFAULT NULL,
   `tagihan` decimal(10,2) NOT NULL,
   `photo_bukti` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `midtrans_order_id` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `metode_bayar` enum('manual','midtrans') COLLATE utf8mb4_general_ci DEFAULT 'manual',
   `status` enum('pending','lunas','ditolak') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
@@ -212,9 +293,17 @@ CREATE TABLE `transaksi` (
   KEY `transaksi_program_id_foreign` (`program_id`),
   CONSTRAINT `transaksi_program_id_foreign` FOREIGN KEY (`program_id`) REFERENCES `program_bimbel` (`program_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `transaksi_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `transaksi` */
+
+insert  into `transaksi`(`transaksi_id`,`user_id`,`program_id`,`jadwal_id`,`kelas_id`,`pengajar_id`,`tagihan`,`photo_bukti`,`midtrans_order_id`,`metode_bayar`,`status`,`created_at`,`updated_at`) values 
+(7,8,10,48,4,7,350000.00,'1773215594_5bb425a149e07507ba18.jpeg',NULL,'manual','lunas','2026-03-11 07:53:14','2026-03-11 08:09:51'),
+(8,4,10,48,4,7,350000.00,'1773217749_ac0bc43a33920ffa5f88.jpeg',NULL,'manual','lunas','2026-03-11 08:29:09','2026-03-11 08:29:37'),
+(9,2,2,47,5,5,120000.00,'1773238266_d727460f59008a7d9e0e.jpeg',NULL,'manual','lunas','2026-03-11 14:11:06','2026-03-11 14:11:41'),
+(10,8,9,52,6,7,230000.00,NULL,'BIMBEL-8-9-1773288228','midtrans','lunas','2026-03-12 04:03:48','2026-03-12 04:06:57'),
+(11,3,5,50,7,6,190000.00,NULL,'BIMBEL-3-5-1773288552','midtrans','lunas','2026-03-12 04:09:12','2026-03-12 04:13:25'),
+(12,3,6,51,8,6,170000.00,NULL,'BIMBEL-3-6-1773288862','midtrans','lunas','2026-03-12 04:14:22','2026-03-12 04:14:35');
 
 /*Table structure for table `user` */
 
@@ -232,7 +321,7 @@ CREATE TABLE `user` (
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `user` */
 
@@ -243,7 +332,8 @@ insert  into `user`(`user_id`,`nama`,`nomor_hp`,`email`,`role`,`tingkat`,`jabata
 (4,'Siti Aminah','081234567893','siti@gmail.com','siswa','SMA',NULL,'$2y$10$MU5NA5P7jI726hk1uu500ewf9FY/Q3jwIM94HoyR65mbqrEMucz4e',NULL,NULL,NULL),
 (5,'Ahmad Rahman','081234567894','ahmad@gmail.com','pengajar',NULL,'SD','$2y$10$AfrdVdpxHE6Z9S1Haon7yeJF0fbopd4isSLc8TkTeuGb3xKNejBKK',NULL,NULL,NULL),
 (6,'Dewi Sartika','081234567895','dewi@gmail.com','pengajar',NULL,'SMP','$2y$10$P7W4bdWoYyfFeSjmkV0.cuVuuSz2ZbpjIOkyQPVL.Kt6G0TF.N6jy',NULL,NULL,NULL),
-(7,'Rini Pratiwi','081234567896','rini@gmail.com','pengajar',NULL,'SMA','$2y$10$GS027MIMdAi2/avOcjVpfOUQKmDyPYh92XKFPg4mUYGJOPL9ouGa6',NULL,NULL,NULL);
+(7,'Rini Pratiwi','081234567896','rini@gmail.com','pengajar',NULL,'SMA','$2y$10$GS027MIMdAi2/avOcjVpfOUQKmDyPYh92XKFPg4mUYGJOPL9ouGa6',NULL,NULL,NULL),
+(8,'frankie','08883866931','frankie.steinlie@gmail.com','siswa','SMA',NULL,'$2y$10$JOk6c7pzkqPGgct9DxwufuPYQxwYiRMNtjKv/dim8b1Thfu8MvixW',NULL,'2026-03-11 05:52:04','2026-03-11 05:52:04');
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
