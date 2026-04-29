@@ -338,18 +338,14 @@
 
                 <!-- Di dalam navbar -->
                 <?php if (session()->get('logged_in') && session()->get('role') == 'siswa'): ?>
-                    <!-- Tampilkan menu yang memerlukan login, jika sudah login -->
                     <a href="<?= base_url('/jadwal') ?>">Jadwal</a>
-
                     <?php if (session()->get('has_transaction')): ?>
-                        <!-- Jika sudah pernah transaksi, tampilkan menu Paket Aktif -->
                         <a href="<?= base_url('/registrasi-pembayaran/paket-aktif') ?>">Paket Aktif</a>
+                        <a href="<?= base_url('/rekap-belajar') ?>">Rekap Belajar</a>
                     <?php else: ?>
-                        <!-- Jika belum pernah transaksi, tampilkan menu Registrasi Pembayaran -->
                         <a href="<?= base_url('/registrasi-pembayaran') ?>">Registrasi Pembayaran</a>
                     <?php endif; ?>
                 <?php else: ?>
-                    <!-- Link yang mengarahkan ke login jika belum login -->
                     <a href="javascript:void(0);" class="require-login" data-redirect="jadwal">Jadwal</a>
                     <a href="javascript:void(0);" class="require-login" data-redirect="registrasi-pembayaran">Registrasi Pembayaran</a>
                 <?php endif; ?>

@@ -21,13 +21,23 @@ class UserController extends ResourceController
 
     public function add()
     {
+        $role = $this->request->getPost('role');
+
         $data = [
-            'nama'         => $this->request->getPost('name'),
-            'nomor_hp'     => $this->request->getPost('nomor_hp'),
-            'email'        => $this->request->getPost('email'),
-            'role'         => $this->request->getPost('role'),
-            'password'     => $this->request->getPost('password'),
+            'nama'     => $this->request->getPost('name'),
+            'nomor_hp' => $this->request->getPost('nomor_hp'),
+            'email'    => $this->request->getPost('email'),
+            'role'     => $role,
+            'password' => $this->request->getPost('password'),
         ];
+
+        // Siswa punya tingkat, pengajar punya jabatan
+        if ($role === 'siswa') {
+            $data['tingkat'] = $this->request->getPost('tingkat') ?: null;
+        }
+        if ($role === 'pengajar') {
+            $data['jabatan'] = $this->request->getPost('jabatan') ?: null;
+        }
 
         if ($this->userModel->insert($data)) {
             return redirect()->to('/dashboard/user')
@@ -36,18 +46,28 @@ class UserController extends ResourceController
             return redirect()->to('/dashboard/user')
                 ->with('error', 'Terjadi kesalahan saat menambahkan user.');
         }
-        return view('admin/user');
     }
 
     public function edit($id = null)
     {
+        $role = $this->request->getPost('role');
+
         $data = [
-            'nama'         => $this->request->getPost('name'),
-            'nomor_hp'     => $this->request->getPost('nomor_hp'),
-            'email'        => $this->request->getPost('email'),
-            'role'         => $this->request->getPost('role'),
+            'nama'     => $this->request->getPost('name'),
+            'nomor_hp' => $this->request->getPost('nomor_hp'),
+            'email'    => $this->request->getPost('email'),
+            'role'     => $role,
         ];
-        // Cek apakah password diubah
+
+        if ($role === 'siswa') {
+            $data['tingkat'] = $this->request->getPost('tingkat') ?: null;
+            $data['jabatan'] = null;
+        }
+        if ($role === 'pengajar') {
+            $data['jabatan'] = $this->request->getPost('jabatan') ?: null;
+            $data['tingkat'] = null;
+        }
+
         $password = $this->request->getPost('password');
         if ($password && $password !== '********') {
             $data['password'] = $password;
@@ -57,10 +77,9 @@ class UserController extends ResourceController
             return redirect()->to('/dashboard/user')
                 ->with('success', 'User berhasil diperbarui.');
         } else {
-            return redirect()->to('/dashboard/jadwal')
+            return redirect()->to('/dashboard/user')
                 ->with('error', 'Terjadi kesalahan saat memperbarui user.');
         }
-        return redirect()->to('/dashboard/user');
     }
 
     public function delete($id = null)

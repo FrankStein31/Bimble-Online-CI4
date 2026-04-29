@@ -749,12 +749,13 @@
 
     <div class="main-container">
         <nav class="sidebar" id="sidebar">
-            <a href="<?= base_url('dashboard/jadwal') ?>" class="sidebar-link" data-page="jadwal">Jadwal</a>
-            <a href="<?= base_url('dashboard/transaksi') ?>" class="sidebar-link" data-page="transaksi">Transaksi</a>
-            <a href="<?= base_url('dashboard/program') ?>" class="sidebar-link" data-page="program">Kelola Program</a>
-            <a href="<?= base_url('dashboard/user') ?>" class="sidebar-link" data-page="user">Kelola User</a>
-            <a href="<?= base_url('dashboard/rekening') ?>" class="sidebar-link" data-page="rekening">Kelola Rekening</a>
-            <a href="<?= base_url('dashboard/siswa-ptn') ?>" class="sidebar-link" data-page="siswa-ptn">Siswa Diterima</a>
+            <a href="<?= base_url('dashboard/jadwal') ?>" class="sidebar-link" data-page="jadwal">📅 Jadwal</a>
+            <a href="<?= base_url('dashboard/transaksi') ?>" class="sidebar-link" data-page="transaksi">💳 Transaksi</a>
+            <a href="<?= base_url('dashboard/program') ?>" class="sidebar-link" data-page="program">📚 Kelola Program</a>
+            <a href="<?= base_url('dashboard/user') ?>" class="sidebar-link" data-page="user">👥 Kelola User</a>
+            <a href="<?= base_url('dashboard/rekening') ?>" class="sidebar-link" data-page="rekening">🏦 Kelola Rekening</a>
+            <a href="<?= base_url('dashboard/siswa-ptn') ?>" class="sidebar-link" data-page="siswa-ptn">🎓 Siswa Diterima PTN</a>
+            <a href="<?= base_url('dashboard/laporan') ?>" class="sidebar-link" data-page="laporan">📋 Hasil Belajar & Laporan</a>
         </nav>
 
         <main class="content">

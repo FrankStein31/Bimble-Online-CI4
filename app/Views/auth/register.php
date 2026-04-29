@@ -465,6 +465,16 @@
                 <div class="error-message"><?= $validation->getError('nomor_hp') ?></div>
             <?php endif; ?>
 
+            <select name="tingkat" class="input-field" required>
+                <option value="">-- Pilih Jenjang Pendidikan --</option>
+                <option value="SD" <?= old('tingkat') === 'SD' ? 'selected' : '' ?>>SD (Sekolah Dasar)</option>
+                <option value="SMP" <?= old('tingkat') === 'SMP' ? 'selected' : '' ?>>SMP (Sekolah Menengah Pertama)</option>
+                <option value="SMA" <?= old('tingkat') === 'SMA' ? 'selected' : '' ?>>SMA (Sekolah Menengah Atas)</option>
+            </select>
+            <?php if (isset($validation) && $validation->hasError('tingkat')): ?>
+                <div class="error-message"><?= $validation->getError('tingkat') ?></div>
+            <?php endif; ?>
+
             <input type="password" name="password" class="input-field" placeholder="Password" required>
             <?php if (isset($validation) && $validation->hasError('password')): ?>
                 <div class="error-message"><?= $validation->getError('password') ?></div>

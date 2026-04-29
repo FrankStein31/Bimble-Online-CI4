@@ -336,6 +336,7 @@
                     <th>No. HP</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Jenjang / Jabatan</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -347,6 +348,19 @@
                             <td><?= $u['nomor_hp'] ?></td>
                             <td><?= $u['email'] ?></td>
                             <td><?= ucfirst($u['role']) ?></td>
+                            <td>
+                                <?php if ($u['role'] === 'siswa' && !empty($u['tingkat'])): ?>
+                                    <span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:12px;font-size:12px;">
+                                        Siswa <?= $u['tingkat'] ?>
+                                    </span>
+                                <?php elseif ($u['role'] === 'pengajar' && !empty($u['jabatan'])): ?>
+                                    <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:12px;font-size:12px;">
+                                        Guru <?= $u['jabatan'] ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span style="color:#9ca3af;font-size:12px;">—</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <a href="#delete-<?= $u['user_id'] ?>" class="action-btn delete-btn">🗑️</a>
                                 <a href="#edit-<?= $u['user_id'] ?>" class="action-btn edit-btn">✏️</a>
@@ -369,31 +383,49 @@
                                 <form action="<?= base_url('user/update/' . $u['user_id']) ?>" method="post">
                                     <?= csrf_field() ?>
                                     <div class="form-group">
-                                        <label for="name-<?= $u['user_id'] ?>">Nama</label>
-                                        <input type="text" id="name-<?= $u['user_id'] ?>" name="name" class="form-control" value="<?= $u['nama'] ?>" placeholder="contoh: Daffa Riyadi">
+                                        <label>Nama</label>
+                                        <input type="text" name="name" class="form-control" value="<?= $u['nama'] ?>">
                                     </div>
                                     <div class="form-group">
-                                        <label for="email-<?= $u['user_id'] ?>">Email</label>
-                                        <input type="email" id="email-<?= $u['user_id'] ?>" name="email" class="form-control" value="<?= $u['email'] ?>" placeholder="contoh: email@gmail.com">
+                                        <label>Email</label>
+                                        <input type="email" name="email" class="form-control" value="<?= $u['email'] ?>">
                                     </div>
                                     <div class="form-group">
-                                        <label for="nomor_hp-<?= $u['user_id'] ?>">Nomor HP</label>
-                                        <input type="text" id="nomor_hp-<?= $u['user_id'] ?>" name="nomor_hp" class="form-control" value="<?= $u['nomor_hp'] ?>" placeholder="contoh: 081231232">
+                                        <label>Nomor HP</label>
+                                        <input type="text" name="nomor_hp" class="form-control" value="<?= $u['nomor_hp'] ?>">
                                     </div>
                                     <div class="form-group">
-                                        <label for="role-<?= $u['user_id'] ?>">Role</label>
-                                        <select id="role-<?= $u['user_id'] ?>" name="role" class="form-select">
+                                        <label>Role</label>
+                                        <select name="role" class="form-select role-select" data-id="<?= $u['user_id'] ?>">
                                             <option value="admin" <?= $u['role'] == 'admin' ? 'selected' : '' ?>>Admin</option>
                                             <option value="siswa" <?= $u['role'] == 'siswa' ? 'selected' : '' ?>>Siswa</option>
-                                            <!-- <option value="pengajar" <?= $u['role'] == 'pengajar' ? 'selected' : '' ?>>Pengajar</option> -->
+                                            <option value="pengajar" <?= $u['role'] == 'pengajar' ? 'selected' : '' ?>>Pengajar</option>
+                                        </select>
+                                    </div>
+                                    <!-- Field tingkat (muncul jika role=siswa) -->
+                                    <div class="form-group field-tingkat-<?= $u['user_id'] ?>" style="<?= $u['role'] !== 'siswa' ? 'display:none' : '' ?>">
+                                        <label>Jenjang Pendidikan Siswa</label>
+                                        <select name="tingkat" class="form-select">
+                                            <option value="">-- Pilih Jenjang --</option>
+                                            <option value="SD" <?= ($u['tingkat'] ?? '') == 'SD' ? 'selected' : '' ?>>SD</option>
+                                            <option value="SMP" <?= ($u['tingkat'] ?? '') == 'SMP' ? 'selected' : '' ?>>SMP</option>
+                                            <option value="SMA" <?= ($u['tingkat'] ?? '') == 'SMA' ? 'selected' : '' ?>>SMA</option>
+                                        </select>
+                                    </div>
+                                    <!-- Field jabatan (muncul jika role=pengajar) -->
+                                    <div class="form-group field-jabatan-<?= $u['user_id'] ?>" style="<?= $u['role'] !== 'pengajar' ? 'display:none' : '' ?>">
+                                        <label>Jabatan Guru (Mengajar Jenjang)</label>
+                                        <select name="jabatan" class="form-select">
+                                            <option value="">-- Pilih Jabatan --</option>
+                                            <option value="SD" <?= ($u['jabatan'] ?? '') == 'SD' ? 'selected' : '' ?>>SD</option>
+                                            <option value="SMP" <?= ($u['jabatan'] ?? '') == 'SMP' ? 'selected' : '' ?>>SMP</option>
+                                            <option value="SMA" <?= ($u['jabatan'] ?? '') == 'SMA' ? 'selected' : '' ?>>SMA</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label for="password-<?= $u['user_id'] ?>">Password</label>
-                                        <input type="password" id="password-<?= $u['user_id'] ?>" name="password" class="form-control" placeholder="Biarkan kosong jika tidak ingin mengubah password">
-                                        <small class="text-muted">Kosongkan jika tidak ingin mengubah password</small>
+                                        <label>Password</label>
+                                        <input type="password" name="password" class="form-control" placeholder="Kosongkan jika tidak diubah">
                                     </div>
-
                                     <div class="form-buttons">
                                         <a href="#" class="btn btn-gray">Batal</a>
                                         <button type="submit" class="btn btn-primary">Simpan</button>
@@ -436,30 +468,49 @@
             <form action="<?= base_url('user/add') ?>" method="post">
                 <?= csrf_field() ?>
                 <div class="form-group">
-                    <label for="name">Nama</label>
-                    <input type="text" id="name" name="name" class="form-control" placeholder="contoh: Daffa Riyadi" value="<?= old('name') ?>">
+                    <label>Nama</label>
+                    <input type="text" name="name" class="form-control" placeholder="contoh: Daffa Riyadi" value="<?= old('name') ?>">
                 </div>
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="contoh: email@gmail.com" value="<?= old('email') ?>">
+                    <label>Email</label>
+                    <input type="email" name="email" class="form-control" placeholder="contoh: email@gmail.com" value="<?= old('email') ?>">
                 </div>
                 <div class="form-group">
-                    <label for="nomor_hp">Nomor HP</label>
-                    <input type="text" id="nomor_hp" name="nomor_hp" class="form-control" placeholder="contoh: 081231232" value="<?= old('nomor_hp') ?>">
+                    <label>Nomor HP</label>
+                    <input type="text" name="nomor_hp" class="form-control" placeholder="contoh: 081231232" value="<?= old('nomor_hp') ?>">
                 </div>
                 <div class="form-group">
-                    <label for="role">Role</label>
-                    <select id="role" name="role" class="form-select">
-                        <option value="admin" <?= old('role') == 'admin' ? 'selected' : '' ?>>Admin</option>
-                        <option value="siswa" <?= old('role') == 'siswa' ? 'selected' : '' ?> selected>Siswa</option>
-                        <!-- <option value="pengajar" <?= old('role') == 'pengajar' ? 'selected' : '' ?>>Pengajar</option> -->
+                    <label>Role</label>
+                    <select id="add-role" name="role" class="form-select">
+                        <option value="admin">Admin</option>
+                        <option value="siswa" selected>Siswa</option>
+                        <option value="pengajar">Pengajar</option>
+                    </select>
+                </div>
+                <!-- Tingkat untuk siswa -->
+                <div class="form-group" id="add-field-tingkat">
+                    <label>Jenjang Pendidikan Siswa</label>
+                    <select name="tingkat" class="form-select">
+                        <option value="">-- Pilih Jenjang --</option>
+                        <option value="SD">SD</option>
+                        <option value="SMP">SMP</option>
+                        <option value="SMA">SMA</option>
+                    </select>
+                </div>
+                <!-- Jabatan untuk pengajar -->
+                <div class="form-group" id="add-field-jabatan" style="display:none">
+                    <label>Jabatan Guru (Mengajar Jenjang)</label>
+                    <select name="jabatan" class="form-select">
+                        <option value="">-- Pilih Jabatan --</option>
+                        <option value="SD">SD</option>
+                        <option value="SMP">SMP</option>
+                        <option value="SMA">SMA</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Masukkan password">
+                    <label>Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Masukkan password">
                 </div>
-
                 <div class="form-buttons">
                     <a href="#" class="btn btn-gray">Batal</a>
                     <button type="submit" class="btn btn-primary">Simpan</button>
@@ -470,7 +521,7 @@
 </section>
 
 <script>
-    // Auto hide flash messages after 5 seconds
+    // Auto hide flash messages
     setTimeout(function() {
         const flashMessages = document.querySelectorAll('.flash-message');
         flashMessages.forEach(message => {
@@ -479,6 +530,33 @@
             setTimeout(() => message.style.display = 'none', 500);
         });
     }, 5000);
+
+    // Toggle tingkat/jabatan field di modal Add
+    const addRoleSelect = document.getElementById('add-role');
+    const addFieldTingkat = document.getElementById('add-field-tingkat');
+    const addFieldJabatan = document.getElementById('add-field-jabatan');
+
+    function toggleAddFields() {
+        const role = addRoleSelect.value;
+        addFieldTingkat.style.display = role === 'siswa'    ? '' : 'none';
+        addFieldJabatan.style.display = role === 'pengajar' ? '' : 'none';
+    }
+    addRoleSelect.addEventListener('change', toggleAddFields);
+    toggleAddFields();
+
+    // Toggle tingkat/jabatan field di setiap modal Edit
+    document.querySelectorAll('.role-select').forEach(function(sel) {
+        const uid = sel.getAttribute('data-id');
+        function toggleEdit() {
+            const role = sel.value;
+            const ftingkat = document.querySelector('.field-tingkat-' + uid);
+            const fjabatan = document.querySelector('.field-jabatan-' + uid);
+            if (ftingkat) ftingkat.style.display = role === 'siswa'    ? '' : 'none';
+            if (fjabatan) fjabatan.style.display = role === 'pengajar' ? '' : 'none';
+        }
+        sel.addEventListener('change', toggleEdit);
+        toggleEdit();
+    });
 </script>
 
 <?= $this->endSection() ?>

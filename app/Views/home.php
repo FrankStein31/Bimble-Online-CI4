@@ -380,6 +380,31 @@
             height: 70px;
         }
     }
+
+    /* Tab Filter Jenjang */
+    .tab-btn {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 10px 24px;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .tab-btn:hover {
+        background: rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .tab-btn.tab-active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
 </style>
 
 <!-- Hero / Foto besar -->
@@ -395,30 +420,70 @@
 <section class="pricing">
     <div class="container">
         <h2>Rincian Biaya Bimbel</h2>
-        <div class="cards-bimbel">
-            <?php if (empty($program)): ?>
-                <div style="text-align: center; padding: 20px;">
-                    Tidak ada program bimbel yang tersedia
-                </div>
-            <?php else: ?>
-                <?php foreach ($program as $pg): ?>
-                    <div class="cards bimbel-card">
-                        <div class="card">
-                            <h3><?= $pg['nama_program'] ?> - <?= $pg['durasi'] ?></h3>
-                            <hr />
-                            <p class="level">Tingkat <?= $pg['tingkat'] ?>:</p>
-                            <p>Kelas <?= $pg['kelas'] ?>: <?= $pg['harga'] ?></p>
-                            <p>Keterangan :</p>
-                            <p style="margin-bottom: 10px;"><?= $pg['keterangan'] ?></p>
-                            <a href="<?= base_url('/registrasi-pembayaran') ?>" class="btn btn-primary">Daftar Sekarang</a>
-                        </div>
 
-                    </div>
+        <?php if (empty($program)): ?>
+            <div style="text-align: center; padding: 40px; color: #718096;">
+                Tidak ada program bimbel yang tersedia
+            </div>
+        <?php else: ?>
+            <?php
+                // Kelompokkan program berdasarkan tingkat
+                $programByTingkat = ['SD' => [], 'SMP' => [], 'SMA' => []];
+                foreach ($program as $pg) {
+                    $t = strtoupper($pg['tingkat'] ?? 'SD');
+                    if (isset($programByTingkat[$t])) $programByTingkat[$t][] = $pg;
+                    else $programByTingkat['SD'][] = $pg;
+                }
+                // Tentukan tab aktif: jika siswa login → tingkat mereka; default SD
+                $activeTingkat = strtoupper(session()->get('tingkat') ?? 'SD');
+                if (!in_array($activeTingkat, ['SD','SMP','SMA'])) $activeTingkat = 'SD';
+            ?>
+
+            <!-- Tab Filter Jenjang -->
+            <div style="display:flex; justify-content:center; gap:12px; margin-bottom:32px; flex-wrap:wrap;">
+                <?php foreach (['SD','SMP','SMA'] as $tk): ?>
+                    <button
+                        class="tab-btn <?= $tk === $activeTingkat ? 'tab-active' : '' ?>"
+                        onclick="filterJenjang('<?= $tk ?>')"
+                        id="tab-<?= $tk ?>">
+                        Jenjang <?= $tk ?>
+                        <span style="margin-left:6px; background:rgba(255,255,255,0.3); border-radius:10px; padding:1px 7px; font-size:0.8rem;">
+                            <?= count($programByTingkat[$tk]) ?>
+                        </span>
+                    </button>
                 <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+            </div>
 
-
+            <!-- Program Cards per Jenjang -->
+            <?php foreach (['SD','SMP','SMA'] as $tk): ?>
+                <div id="panel-<?= $tk ?>" class="cards-bimbel jenjang-panel" style="display:<?= $tk === $activeTingkat ? 'grid' : 'none' ?>;">
+                    <?php if (empty($programByTingkat[$tk])): ?>
+                        <div style="grid-column:1/-1; text-align:center; padding:40px; color:#718096;">
+                            <div style="font-size:3rem; margin-bottom:12px;">📚</div>
+                            Belum ada program untuk jenjang <?= $tk ?>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($programByTingkat[$tk] as $pg): ?>
+                            <div class="cards bimbel-card">
+                                <div class="card">
+                                    <h3><?= esc($pg['nama_program']) ?> <span style="font-size:0.75rem; background:#667eea; color:white; padding:2px 8px; border-radius:10px; vertical-align:middle;"><?= esc($pg['tingkat']) ?></span></h3>
+                                    <hr />
+                                    <p class="level">Jenjang <?= esc($pg['tingkat']) ?> – Kelas <?= esc($pg['kelas']) ?></p>
+                                    <p><strong>Durasi:</strong> <?= esc($pg['durasi']) ?></p>
+                                    <p><strong>Harga:</strong> Rp <?= number_format($pg['harga'], 0, ',', '.') ?>/bulan</p>
+                                    <p><?= esc($pg['keterangan'] ?? '') ?></p>
+                                    <?php if (session()->get('logged_in') && session()->get('role') === 'siswa'): ?>
+                                        <a href="<?= base_url('/registrasi-pembayaran') ?>" class="btn btn-primary">Daftar Sekarang</a>
+                                    <?php else: ?>
+                                        <a href="<?= base_url('/register') ?>" class="btn btn-primary">Daftar Sekarang</a>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
 </section>
 
@@ -540,5 +605,24 @@
             },
         });
     });
+</script>
+
+<script>
+    function filterJenjang(tingkat) {
+        // Sembunyikan semua panel
+        document.querySelectorAll('.jenjang-panel').forEach(function(el) {
+            el.style.display = 'none';
+        });
+        // Tampilkan panel yang dipilih
+        var panel = document.getElementById('panel-' + tingkat);
+        if (panel) panel.style.display = 'grid';
+
+        // Update tab aktif
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+            btn.classList.remove('tab-active');
+        });
+        var activeTab = document.getElementById('tab-' + tingkat);
+        if (activeTab) activeTab.classList.add('tab-active');
+    }
 </script>
 <?= $this->endSection() ?>

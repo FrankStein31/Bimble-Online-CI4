@@ -1,5 +1,5 @@
 /*
-SQLyog Community
+SQLyog Enterprise
 MySQL - 8.0.30 : Database - bimbel-online
 *********************************************************************
 */
@@ -16,54 +16,101 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/`bimbel-online` /*!40100 DEFAULT CHARACT
 
 USE `bimbel-online`;
 
-/*Table structure for table `jadwal` */
+/*Table structure for table `hasil_belajar` */
 
-DROP TABLE IF EXISTS `jadwal`;
+CREATE TABLE `hasil_belajar` (
+  `hasil_id` int unsigned NOT NULL AUTO_INCREMENT,
+  `siswa_id` int unsigned NOT NULL,
+  `pengajar_id` int unsigned NOT NULL,
+  `program_id` int unsigned NOT NULL,
+  `mata_pelajaran` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `nilai` decimal(5,2) DEFAULT NULL,
+  `catatan` text COLLATE utf8mb4_general_ci,
+  `tanggal` date NOT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`hasil_id`),
+  KEY `hasil_belajar_siswa_id_foreign` (`siswa_id`),
+  KEY `hasil_belajar_pengajar_id_foreign` (`pengajar_id`),
+  KEY `hasil_belajar_program_id_foreign` (`program_id`),
+  CONSTRAINT `hasil_belajar_pengajar_id_foreign` FOREIGN KEY (`pengajar_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `hasil_belajar_program_id_foreign` FOREIGN KEY (`program_id`) REFERENCES `program_bimbel` (`program_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `hasil_belajar_siswa_id_foreign` FOREIGN KEY (`siswa_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Data for the table `hasil_belajar` */
+
+insert  into `hasil_belajar`(`hasil_id`,`siswa_id`,`pengajar_id`,`program_id`,`mata_pelajaran`,`nilai`,`catatan`,`tanggal`,`created_at`,`updated_at`) values 
+(2,8,7,10,'Matematika',95.00,'pelajari lagi','2026-03-11','2026-03-11 14:06:44','2026-03-11 14:06:44'),
+(3,4,7,10,'Matematika',50.00,'belajar','2026-03-11','2026-03-11 14:08:23','2026-03-11 14:08:23'),
+(4,2,5,2,'indo',80.00,'sip','2026-03-11','2026-03-11 14:35:44','2026-03-11 14:35:44');
+
+/*Table structure for table `jadwal` */
 
 CREATE TABLE `jadwal` (
   `jadwal_id` int unsigned NOT NULL AUTO_INCREMENT,
-  `hari` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `jam_mulai` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `jam_selesai` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `hari` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `jam_mulai` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `jam_selesai` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`jadwal_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `jadwal` */
 
 insert  into `jadwal`(`jadwal_id`,`hari`,`jam_mulai`,`jam_selesai`,`created_at`,`updated_at`) values 
-(1,'Senin','08:00','10:00',NULL,NULL),
-(2,'Senin','10:30','12:30',NULL,NULL),
-(3,'Senin','14:00','16:00',NULL,NULL),
-(4,'Selasa','08:00','10:00',NULL,NULL),
-(5,'Selasa','10:30','12:30',NULL,NULL),
-(6,'Selasa','14:00','16:00',NULL,NULL),
-(7,'Rabu','08:00','10:00',NULL,NULL),
-(8,'Rabu','10:30','12:30',NULL,NULL),
-(9,'Kamis','08:00','10:00',NULL,NULL),
-(10,'Kamis','14:00','16:00',NULL,NULL),
-(11,'Jumat','08:00','10:00',NULL,NULL),
-(12,'Jumat','14:00','16:00',NULL,NULL),
-(13,'Sabtu','08:00','10:00',NULL,NULL),
-(14,'Sabtu','10:30','12:30',NULL,NULL),
-(15,'Sabtu','14:00','16:00',NULL,NULL),
-(16,'Senin','05:56','07:58','2025-09-17 07:53:46','2025-09-17 07:53:46');
+(47,'Senin','08:00','10:00',NULL,NULL),
+(48,'Senin','10:30','12:30',NULL,NULL),
+(49,'Senin','14:00','16:00',NULL,NULL),
+(50,'Selasa','08:00','10:00',NULL,NULL),
+(51,'Selasa','10:30','12:30',NULL,NULL),
+(52,'Selasa','14:00','16:00',NULL,NULL),
+(53,'Rabu','08:00','10:00',NULL,NULL),
+(54,'Rabu','10:30','12:30',NULL,NULL),
+(55,'Kamis','08:00','10:00',NULL,NULL),
+(56,'Kamis','14:00','16:00',NULL,NULL),
+(57,'Jumat','08:00','10:00',NULL,NULL),
+(58,'Jumat','14:00','16:00',NULL,NULL),
+(59,'Sabtu','08:00','10:00',NULL,NULL),
+(60,'Sabtu','10:30','12:30',NULL,NULL),
+(61,'Sabtu','14:00','16:00',NULL,NULL);
+
+/*Table structure for table `kelas_bimbel` */
+
+CREATE TABLE `kelas_bimbel` (
+  `kelas_id` int unsigned NOT NULL AUTO_INCREMENT,
+  `program_id` int unsigned NOT NULL,
+  `jadwal_id` int unsigned NOT NULL,
+  `pengajar_id` int unsigned NOT NULL,
+  `kuota` tinyint unsigned NOT NULL DEFAULT '5',
+  `terisi` tinyint unsigned NOT NULL DEFAULT '0',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`kelas_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Data for the table `kelas_bimbel` */
+
+insert  into `kelas_bimbel`(`kelas_id`,`program_id`,`jadwal_id`,`pengajar_id`,`kuota`,`terisi`,`created_at`,`updated_at`) values 
+(4,10,48,7,5,2,'2026-03-11 08:09:51','2026-03-11 08:29:37'),
+(5,2,47,5,5,1,'2026-03-11 14:11:41','2026-03-11 14:11:41'),
+(6,9,52,7,5,1,'2026-03-12 04:06:57','2026-03-12 04:06:57'),
+(7,5,50,6,5,1,'2026-03-12 04:13:25','2026-03-12 04:13:25'),
+(8,6,51,6,5,1,'2026-03-12 04:14:35','2026-03-12 04:14:35');
 
 /*Table structure for table `migrations` */
 
-DROP TABLE IF EXISTS `migrations`;
-
 CREATE TABLE `migrations` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `version` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `class` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `group` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `namespace` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `version` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `class` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `group` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `namespace` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `time` int NOT NULL,
   `batch` int unsigned NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `migrations` */
 
@@ -74,21 +121,26 @@ insert  into `migrations`(`id`,`version`,`class`,`group`,`namespace`,`time`,`bat
 (4,'2025-04-24-114752','App\\Database\\Migrations\\CreateNoRekeningTable','default','App',1755917432,1),
 (5,'2025-04-24-114825','App\\Database\\Migrations\\CreateSiswaDiterimaPtnTable','default','App',1755917432,1),
 (6,'2025-04-24-114846','App\\Database\\Migrations\\CreateTransaksiTable','default','App',1755917432,1),
-(7,'2025-04-29-012114','App\\Database\\Migrations\\CreatePasswordResetTable','default','App',1755917432,1);
+(7,'2025-04-29-012114','App\\Database\\Migrations\\CreatePasswordResetTable','default','App',1755917432,1),
+(8,'2026-03-10-000001','App\\Database\\Migrations\\CreateHasilBelajarTable','default','App',1773158508,2),
+(9,'2026-03-11-000001','App\\Database\\Migrations\\AlterUserAddTingkat','default','App',1773200685,3),
+(10,'2026-03-11-000002','App\\Database\\Migrations\\CreateKelasBimbelTable','default','App',1773200685,3),
+(11,'2026-03-11-000003','App\\Database\\Migrations\\AlterTransaksiAddKelasJadwal','default','App',1773200685,3),
+(12,'2026-03-11-000004','App\\Database\\Migrations\\AlterUserAddJabatan','default','App',1773202378,4),
+(13,'2026-03-11-000005','App\\Database\\Migrations\\CreateProgramJadwalTable','default','App',1773210365,5),
+(14,'2026-03-12-000001','App\\Database\\Migrations\\AlterTransaksiAddMidtrans','default','App',1773286572,6);
 
 /*Table structure for table `no_rekening` */
 
-DROP TABLE IF EXISTS `no_rekening`;
-
 CREATE TABLE `no_rekening` (
   `rekening_id` int unsigned NOT NULL AUTO_INCREMENT,
-  `bank` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `no_rek` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
-  `nama` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `bank` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `no_rek` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nama` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`rekening_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `no_rekening` */
 
@@ -101,12 +153,10 @@ insert  into `no_rekening`(`rekening_id`,`bank`,`no_rek`,`nama`,`created_at`,`up
 
 /*Table structure for table `password_resets` */
 
-DROP TABLE IF EXISTS `password_resets`;
-
 CREATE TABLE `password_resets` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `token` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `created_at` datetime DEFAULT NULL,
   `expired_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -119,20 +169,18 @@ insert  into `password_resets`(`id`,`email`,`token`,`created_at`,`expired_at`) v
 
 /*Table structure for table `program_bimbel` */
 
-DROP TABLE IF EXISTS `program_bimbel`;
-
 CREATE TABLE `program_bimbel` (
   `program_id` int unsigned NOT NULL AUTO_INCREMENT,
-  `nama_program` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `durasi` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
-  `tingkat` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `kelas` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `nama_program` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `durasi` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `tingkat` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `kelas` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `harga` decimal(10,2) NOT NULL,
-  `keterangan` text COLLATE utf8mb4_general_ci,
+  `keterangan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`program_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `program_bimbel` */
 
@@ -146,23 +194,69 @@ insert  into `program_bimbel`(`program_id`,`nama_program`,`durasi`,`tingkat`,`ke
 (7,'Matematika SMA IPA','3 jam/pertemuan','SMA','10-12',250000.00,'Program bimbingan belajar matematika untuk siswa SMA jurusan IPA',NULL,NULL),
 (8,'Fisika SMA','2.5 jam/pertemuan','SMA','10-12',230000.00,'Program bimbingan belajar fisika untuk siswa SMA',NULL,NULL),
 (9,'Kimia SMA','2.5 jam/pertemuan','SMA','10-12',230000.00,'Program bimbingan belajar kimia untuk siswa SMA',NULL,NULL),
-(10,'Persiapan UTBK','4 jam/pertemuan','SMA','12',350000.00,'Program intensif persiapan UTBK untuk masuk PTN',NULL,NULL);
+(10,'Persiapan UTBK','2 jam/pertemuan','SMA','12',350000.00,'Program intensif persiapan UTBK untuk masuk PTN',NULL,NULL);
+
+/*Table structure for table `program_jadwal` */
+
+CREATE TABLE `program_jadwal` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `program_id` int unsigned NOT NULL,
+  `jadwal_id` int unsigned NOT NULL,
+  `urutan` tinyint NOT NULL DEFAULT '1' COMMENT '1=Pertemuan ke-1, 2=ke-2, 3=ke-3 dalam seminggu',
+  PRIMARY KEY (`id`),
+  KEY `program_jadwal_jadwal_id_foreign` (`jadwal_id`),
+  KEY `program_id_jadwal_id` (`program_id`,`jadwal_id`),
+  CONSTRAINT `program_jadwal_jadwal_id_foreign` FOREIGN KEY (`jadwal_id`) REFERENCES `jadwal` (`jadwal_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `program_jadwal_program_id_foreign` FOREIGN KEY (`program_id`) REFERENCES `program_bimbel` (`program_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Data for the table `program_jadwal` */
+
+insert  into `program_jadwal`(`id`,`program_id`,`jadwal_id`,`urutan`) values 
+(1,1,47,1),
+(2,1,53,2),
+(3,1,57,3),
+(4,2,47,1),
+(5,2,53,2),
+(6,2,57,3),
+(7,3,48,1),
+(8,3,54,2),
+(9,3,57,3),
+(10,4,50,1),
+(11,4,55,2),
+(12,4,59,3),
+(13,5,50,1),
+(14,5,55,2),
+(15,5,60,3),
+(16,6,51,1),
+(17,6,56,2),
+(18,6,60,3),
+(19,7,49,1),
+(20,7,52,2),
+(21,7,61,3),
+(22,8,49,1),
+(23,8,58,2),
+(24,8,61,3),
+(25,9,52,1),
+(26,9,58,2),
+(27,9,61,3),
+(28,10,48,1),
+(29,10,51,2),
+(30,10,61,3);
 
 /*Table structure for table `siswa_diterima_ptn` */
 
-DROP TABLE IF EXISTS `siswa_diterima_ptn`;
-
 CREATE TABLE `siswa_diterima_ptn` (
   `siswa_id` int unsigned NOT NULL AUTO_INCREMENT,
-  `nama_siswa` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `prodi` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `nama_kampus` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `tahun_diterima` varchar(4) COLLATE utf8mb4_general_ci NOT NULL,
-  `photo` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nama_siswa` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `prodi` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nama_kampus` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `tahun_diterima` varchar(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `photo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`siswa_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `siswa_diterima_ptn` */
 
@@ -180,15 +274,18 @@ insert  into `siswa_diterima_ptn`(`siswa_id`,`nama_siswa`,`prodi`,`nama_kampus`,
 
 /*Table structure for table `transaksi` */
 
-DROP TABLE IF EXISTS `transaksi`;
-
 CREATE TABLE `transaksi` (
   `transaksi_id` int unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int unsigned NOT NULL,
   `program_id` int unsigned NOT NULL,
+  `jadwal_id` int unsigned DEFAULT NULL,
+  `kelas_id` int unsigned DEFAULT NULL,
+  `pengajar_id` int unsigned DEFAULT NULL,
   `tagihan` decimal(10,2) NOT NULL,
-  `photo_bukti` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status` enum('pending','lunas','ditolak') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
+  `photo_bukti` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `midtrans_order_id` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `metode_bayar` enum('manual','midtrans') COLLATE utf8mb4_general_ci DEFAULT 'manual',
+  `status` enum('pending','lunas','ditolak') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`transaksi_id`),
@@ -196,49 +293,47 @@ CREATE TABLE `transaksi` (
   KEY `transaksi_program_id_foreign` (`program_id`),
   CONSTRAINT `transaksi_program_id_foreign` FOREIGN KEY (`program_id`) REFERENCES `program_bimbel` (`program_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `transaksi_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `transaksi` */
 
-insert  into `transaksi`(`transaksi_id`,`user_id`,`program_id`,`tagihan`,`photo_bukti`,`status`,`created_at`,`updated_at`) values 
-(1,2,4,200000.00,NULL,'lunas',NULL,NULL),
-(2,3,5,190000.00,NULL,'lunas',NULL,'2025-09-17 07:52:38'),
-(3,6,7,250000.00,NULL,'lunas',NULL,NULL),
-(4,2,6,170000.00,NULL,'lunas',NULL,'2025-10-28 15:12:54'),
-(5,3,10,350000.00,NULL,'ditolak',NULL,NULL),
-(6,6,8,230000.00,NULL,'lunas',NULL,NULL),
-(9,9,10,350000.00,'1757915421_a08c767e4361a42d864c.png','pending','2025-09-15 05:50:21','2025-09-15 05:50:21');
+insert  into `transaksi`(`transaksi_id`,`user_id`,`program_id`,`jadwal_id`,`kelas_id`,`pengajar_id`,`tagihan`,`photo_bukti`,`midtrans_order_id`,`metode_bayar`,`status`,`created_at`,`updated_at`) values 
+(7,8,10,48,4,7,350000.00,'1773215594_5bb425a149e07507ba18.jpeg',NULL,'manual','lunas','2026-03-11 07:53:14','2026-03-11 08:09:51'),
+(8,4,10,48,4,7,350000.00,'1773217749_ac0bc43a33920ffa5f88.jpeg',NULL,'manual','lunas','2026-03-11 08:29:09','2026-03-11 08:29:37'),
+(9,2,2,47,5,5,120000.00,'1773238266_d727460f59008a7d9e0e.jpeg',NULL,'manual','lunas','2026-03-11 14:11:06','2026-03-11 14:11:41'),
+(10,8,9,52,6,7,230000.00,NULL,'BIMBEL-8-9-1773288228','midtrans','lunas','2026-03-12 04:03:48','2026-03-12 04:06:57'),
+(11,3,5,50,7,6,190000.00,NULL,'BIMBEL-3-5-1773288552','midtrans','lunas','2026-03-12 04:09:12','2026-03-12 04:13:25'),
+(12,3,6,51,8,6,170000.00,NULL,'BIMBEL-3-6-1773288862','midtrans','lunas','2026-03-12 04:14:22','2026-03-12 04:14:35');
 
 /*Table structure for table `user` */
 
-DROP TABLE IF EXISTS `user`;
-
 CREATE TABLE `user` (
   `user_id` int unsigned NOT NULL AUTO_INCREMENT,
-  `nama` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `nomor_hp` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `role` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `photo` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nama` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nomor_hp` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `role` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `tingkat` enum('SD','SMP','SMA') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `jabatan` enum('SD','SMP','SMA') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `photo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `user` */
 
-insert  into `user`(`user_id`,`nama`,`nomor_hp`,`email`,`role`,`password`,`photo`,`created_at`,`updated_at`) values 
-(1,'Administrator','081234567890','admin@gmail.com','admin','$2y$10$s3FVPNDl4NdAVCXfPDP/SOf0Jdiw3F.99p8bsWrP1pyZ6EMTPJToG',NULL,NULL,'2025-10-28 15:18:08'),
-(2,'siswa','081234567891','siswa@gmail.com','siswa','$2y$10$3pZ9gIqxG5T4GRNfSlDa2eecWUaOAxJ53K4ePQ71gc32XvR/85ozm',NULL,NULL,NULL),
-(3,'Budi Santoso','081234567891','budi@gmail.com','siswa','$2y$10$a9SemhpEQA8vcmW3qWA3wOafhiBe1VgNNV1AGhUXQ5FNhvlXTfuX.',NULL,NULL,NULL),
-(4,'Siti Aminah','081234567892','siti@gmail.com','siswa','$2y$10$bAOBQ7LPfeORDLL5gBt/NOkUPc4DdBKl79XxiWXK90V1PKcEYRdu2',NULL,NULL,'2025-10-14 06:33:18'),
-(5,'Ahmad Rahman','081234567893','ahmad@gmail.com','pengajar','$2y$10$VBvFhp.qf2Hq046PTbDNEeKKv9hBc3DVOX/jaiuQGMn/WdSt8tqby',NULL,NULL,NULL),
-(6,'Dewi Sartika','081234567894','dewi@gmail.com','pengajar','$2y$10$4Dr/jdtxGstXol7NXVfgO.Lw72uLhsIe0KLXAH0EvCAID/On2ybd2',NULL,NULL,NULL),
-(7,'Rini Pratiwi','081234567895','rini@gmail.com','siswa','$2y$10$57D1tdZOj7qFL.0yGDlQ0u.O3R/D9mImlbXliyCrlv9eLtaHewud2',NULL,NULL,NULL),
-(9,'pampamipam','234567854321','hiyosinomi@gmail.com','admin','$2y$10$GcEaoWuujBHJfUIKTG4VfuoWeKcpG.8Ns10kQaKKjJ6fPwSsbgvuW',NULL,'2025-09-15 05:48:55','2026-02-19 02:02:50'),
-(10,'muhammad abit','082223716397','muhammadabityusuf@gmail.com','siswa','$2y$10$YD5.rG/6bi7SOm7GjReyJuILwqdhYVN7eV0h/qkkxZMNr0UrOGVji',NULL,'2026-02-12 01:59:26','2026-02-12 01:59:26');
+insert  into `user`(`user_id`,`nama`,`nomor_hp`,`email`,`role`,`tingkat`,`jabatan`,`password`,`photo`,`created_at`,`updated_at`) values 
+(1,'Administrator','081234567890','admin@gmail.com','admin',NULL,NULL,'$2y$10$XsOCcWRYNPFE39eLTV6y7Ok8L2GHcUzh1bbWAREYCdFWHo21zv9o6',NULL,NULL,NULL),
+(2,'Andi Setiawan','081234567891','siswa@gmail.com','siswa','SD',NULL,'$2y$10$1x.pjnYTTgZS.qicXFhAi.t1KaEVFvggkhHuoFCcQrHq9WGE0TPdy',NULL,NULL,NULL),
+(3,'Budi Santoso','081234567892','budi@gmail.com','siswa','SMP',NULL,'$2y$10$HqoBZ2pTxsCquainhrui6uAu.tbHxyulDqdeIi3/zizdd99nO4uAS',NULL,NULL,NULL),
+(4,'Siti Aminah','081234567893','siti@gmail.com','siswa','SMA',NULL,'$2y$10$MU5NA5P7jI726hk1uu500ewf9FY/Q3jwIM94HoyR65mbqrEMucz4e',NULL,NULL,NULL),
+(5,'Ahmad Rahman','081234567894','ahmad@gmail.com','pengajar',NULL,'SD','$2y$10$AfrdVdpxHE6Z9S1Haon7yeJF0fbopd4isSLc8TkTeuGb3xKNejBKK',NULL,NULL,NULL),
+(6,'Dewi Sartika','081234567895','dewi@gmail.com','pengajar',NULL,'SMP','$2y$10$P7W4bdWoYyfFeSjmkV0.cuVuuSz2ZbpjIOkyQPVL.Kt6G0TF.N6jy',NULL,NULL,NULL),
+(7,'Rini Pratiwi','081234567896','rini@gmail.com','pengajar',NULL,'SMA','$2y$10$GS027MIMdAi2/avOcjVpfOUQKmDyPYh92XKFPg4mUYGJOPL9ouGa6',NULL,NULL,NULL),
+(8,'frankie','08883866931','frankie.steinlie@gmail.com','siswa','SMA',NULL,'$2y$10$JOk6c7pzkqPGgct9DxwufuPYQxwYiRMNtjKv/dim8b1Thfu8MvixW',NULL,'2026-03-11 05:52:04','2026-03-11 05:52:04');
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
