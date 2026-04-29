@@ -98,15 +98,12 @@ class ProgramBimbelModel extends Model
         // Delete old links
         $db->table('program_jadwal')->where('program_id', $programId)->delete();
         // Insert new links
-        $now = date('Y-m-d H:i:s');
         foreach ($jadwalIds as $index => $jadwalId) {
             if (!empty($jadwalId)) {
                 $db->table('program_jadwal')->insert([
                     'program_id' => $programId,
                     'jadwal_id'  => (int) $jadwalId,
                     'urutan'     => $index + 1,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ]);
             }
         }
