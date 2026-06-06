@@ -325,11 +325,33 @@
             </div>
         <?php endif; ?>
 
-        <div class="top-container">
-            <a href="#add-modal" class="add-button">Tambah User</a>
+        <div class="top-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div class="filter-container" style="display: flex; gap: 10px; align-items: center;">
+                <label style="font-weight:bold; color:#555;">Filter Role:</label>
+                <select id="role-filter" class="form-select" style="width: auto; padding: 6px 12px; height: 35px; border-radius: 20px; outline:none;" onchange="filterTable()">
+                    <option value="semua">Semua</option>
+                    <option value="admin">Admin</option>
+                    <option value="pengajar">Guru/Pengajar</option>
+                    <option value="siswa">Siswa</option>
+                </select>
+            </div>
+            <a href="#add-modal" class="add-button">+ Tambah User</a>
         </div>
 
-        <table>
+        <?php
+        $protectedAdminId = null;
+        if (isset($user) && is_array($user)) {
+            foreach ($user as $u) {
+                if (strtolower($u['role']) === 'admin') {
+                    if ($protectedAdminId === null) {
+                        $protectedAdminId = $u['user_id'];
+                    }
+                }
+            }
+        }
+        ?>
+
+        <table id="user-table">
             <thead>
                 <tr>
                     <th>Nama</th>
@@ -343,7 +365,7 @@
             <tbody>
                 <?php if (isset($user) && count($user) > 0): ?>
                     <?php foreach ($user as $u): ?>
-                        <tr>
+                        <tr data-role="<?= strtolower($u['role']) ?>">
                             <td><?= $u['nama'] ?></td>
                             <td><?= $u['nomor_hp'] ?></td>
                             <td><?= $u['email'] ?></td>
@@ -362,7 +384,11 @@
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="#delete-<?= $u['user_id'] ?>" class="action-btn delete-btn">🗑️</a>
+                                <?php if (strtolower($u['role']) === 'admin' && $u['user_id'] == $protectedAdminId): ?>
+                                    <span title="Admin utama tidak dapat dihapus" style="opacity:0.5; cursor:not-allowed; margin-right: 5px; font-size: 18px;">🗑️</span>
+                                <?php else: ?>
+                                    <a href="#delete-<?= $u['user_id'] ?>" class="action-btn delete-btn">🗑️</a>
+                                <?php endif; ?>
                                 <a href="#edit-<?= $u['user_id'] ?>" class="action-btn edit-btn">✏️</a>
                             </td>
                         </tr>
@@ -450,8 +476,8 @@
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr>
-                        <td colspan="5" style="text-align: center;">Tidak ada data user</td>
+                    <tr class="no-data">
+                        <td colspan="6" style="text-align: center;">Tidak ada data user</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -557,6 +583,21 @@
         sel.addEventListener('change', toggleEdit);
         toggleEdit();
     });
+
+    function filterTable() {
+        const role = document.getElementById('role-filter').value.toLowerCase();
+        const rows = document.querySelectorAll('#user-table tbody tr');
+        
+        rows.forEach(row => {
+            if (row.classList.contains('no-data')) return;
+            const rowRole = row.getAttribute('data-role');
+            if (role === 'semua' || rowRole === role) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
 </script>
 
 <?= $this->endSection() ?>
