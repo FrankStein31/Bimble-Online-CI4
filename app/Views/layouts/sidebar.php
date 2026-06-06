@@ -750,6 +750,7 @@
     <div class="main-container">
         <nav class="sidebar" id="sidebar">
             <a href="<?= base_url('dashboard/jadwal') ?>" class="sidebar-link" data-page="jadwal">📅 Jadwal</a>
+            <a href="<?= base_url('dashboard/penugasan') ?>" class="sidebar-link" data-page="penugasan">👨‍🏫 Penugasan Guru</a>
             <a href="<?= base_url('dashboard/transaksi') ?>" class="sidebar-link" data-page="transaksi">💳 Transaksi</a>
             <a href="<?= base_url('dashboard/program') ?>" class="sidebar-link" data-page="program">📚 Kelola Program</a>
             <a href="<?= base_url('dashboard/user') ?>" class="sidebar-link" data-page="user">👥 Kelola User</a>

@@ -56,6 +56,8 @@ $routes->group('/dashboard', ['filter' => 'auth:admin'], function ($routes) {
     $routes->get('siswa-ptn', 'SiswaPtnController::index');
     $routes->get('transaksi', 'TransaksiController::transaksi');
     $routes->get('user', 'UserController::index');
+    $routes->get('penugasan', 'JadwalController::penugasan');
+    $routes->post('penugasan/reassign', 'JadwalController::reassign');
     // Laporan = hasil belajar + cetak (menu tunggal, menggantikan hasil-belajar terpisah)
     $routes->get('laporan', 'LaporanController::index');
     $routes->get('laporan/cetak', 'LaporanController::cetak');
