@@ -31,11 +31,14 @@ class LaporanController extends BaseController
 
     public function tambahHasil()
     {
+        $program_id = $this->request->getPost('program_id');
+        $program = $this->programModel->find($program_id);
+
         $data = [
             'siswa_id'       => $this->request->getPost('siswa_id'),
             'pengajar_id'    => $this->request->getPost('pengajar_id'),
-            'program_id'     => $this->request->getPost('program_id'),
-            'mata_pelajaran' => $this->request->getPost('mata_pelajaran'),
+            'program_id'     => $program_id,
+            'mata_pelajaran' => $program ? $program['nama_program'] : '',
             'nilai'          => $this->request->getPost('nilai') ?: null,
             'catatan'        => $this->request->getPost('catatan'),
             'tanggal'        => $this->request->getPost('tanggal'),
@@ -49,11 +52,14 @@ class LaporanController extends BaseController
 
     public function editHasil($id = null)
     {
+        $program_id = $this->request->getPost('program_id');
+        $program = $this->programModel->find($program_id);
+
         $data = [
             'siswa_id'       => $this->request->getPost('siswa_id'),
             'pengajar_id'    => $this->request->getPost('pengajar_id'),
-            'program_id'     => $this->request->getPost('program_id'),
-            'mata_pelajaran' => $this->request->getPost('mata_pelajaran'),
+            'program_id'     => $program_id,
+            'mata_pelajaran' => $program ? $program['nama_program'] : '',
             'nilai'          => $this->request->getPost('nilai') ?: null,
             'catatan'        => $this->request->getPost('catatan'),
             'tanggal'        => $this->request->getPost('tanggal'),

@@ -27,7 +27,6 @@
                     <th>Siswa</th>
                     <th>Pengajar</th>
                     <th>Program</th>
-                    <th>Mata Pelajaran</th>
                     <th>Nilai</th>
                     <th>Catatan</th>
                     <th>Aksi</th>
@@ -44,7 +43,6 @@
                             <td data-label="Siswa"><?= esc($h['nama_siswa']) ?></td>
                             <td data-label="Pengajar"><?= esc($h['nama_pengajar']) ?></td>
                             <td data-label="Program"><?= esc($h['nama_program']) ?> (<?= esc($h['tingkat']) ?> <?= esc($h['kelas']) ?>)</td>
-                            <td data-label="Mata Pelajaran"><?= esc($h['mata_pelajaran']) ?></td>
                             <td data-label="Nilai">
                                 <?php if ($h['nilai'] !== null): ?>
                                     <strong style="color:<?= $h['nilai'] >= 75 ? '#2f855a' : ($h['nilai'] >= 60 ? '#d69e2e' : '#c53030') ?>">
@@ -80,7 +78,7 @@
             <?= csrf_field() ?>
             <div class="form-group">
                 <label>Siswa</label>
-                <select name="siswa_id" class="form-select" required>
+                <select name="siswa_id" id="add_siswa" class="form-select" required onchange="adminAutoFill(this.value, 'add')">
                     <option value="">Pilih Siswa</option>
                     <?php foreach ($siswa as $s): ?>
                         <option value="<?= $s['user_id'] ?>"><?= esc($s['nama']) ?></option>
@@ -89,7 +87,7 @@
             </div>
             <div class="form-group">
                 <label>Pengajar</label>
-                <select name="pengajar_id" class="form-select" required>
+                <select name="pengajar_id" id="add_pengajar" class="form-select" required style="pointer-events: none; background: #e2e8f0;">
                     <option value="">Pilih Pengajar</option>
                     <?php foreach ($pengajar as $p): ?>
                         <option value="<?= $p['user_id'] ?>"><?= esc($p['nama']) ?></option>
@@ -98,16 +96,12 @@
             </div>
             <div class="form-group">
                 <label>Program</label>
-                <select name="program_id" class="form-select" required>
+                <select name="program_id" id="add_program" class="form-select" required style="pointer-events: none; background: #e2e8f0;">
                     <option value="">Pilih Program</option>
                     <?php foreach ($program as $p): ?>
                         <option value="<?= $p['program_id'] ?>"><?= esc($p['nama_program']) ?> (<?= $p['tingkat'] ?> <?= $p['kelas'] ?>)</option>
                     <?php endforeach; ?>
                 </select>
-            </div>
-            <div class="form-group">
-                <label>Mata Pelajaran</label>
-                <input type="text" name="mata_pelajaran" class="form-control" placeholder="Contoh: Matematika" required>
             </div>
             <div class="form-group">
                 <label>Nilai (0–100)</label>
@@ -140,7 +134,7 @@
             <?= csrf_field() ?>
             <div class="form-group">
                 <label>Siswa</label>
-                <select name="siswa_id" id="edit_siswa_id" class="form-select" required>
+                <select name="siswa_id" id="edit_siswa_id" class="form-select" required onchange="adminAutoFill(this.value, 'edit')">
                     <?php foreach ($siswa as $s): ?>
                         <option value="<?= $s['user_id'] ?>"><?= esc($s['nama']) ?></option>
                     <?php endforeach; ?>
@@ -148,7 +142,7 @@
             </div>
             <div class="form-group">
                 <label>Pengajar</label>
-                <select name="pengajar_id" id="edit_pengajar_id" class="form-select" required>
+                <select name="pengajar_id" id="edit_pengajar_id" class="form-select" required style="pointer-events: none; background: #e2e8f0;">
                     <?php foreach ($pengajar as $p): ?>
                         <option value="<?= $p['user_id'] ?>"><?= esc($p['nama']) ?></option>
                     <?php endforeach; ?>
@@ -156,15 +150,11 @@
             </div>
             <div class="form-group">
                 <label>Program</label>
-                <select name="program_id" id="edit_program_id" class="form-select" required>
+                <select name="program_id" id="edit_program_id" class="form-select" required style="pointer-events: none; background: #e2e8f0;">
                     <?php foreach ($program as $p): ?>
                         <option value="<?= $p['program_id'] ?>"><?= esc($p['nama_program']) ?> (<?= $p['tingkat'] ?> <?= $p['kelas'] ?>)</option>
                     <?php endforeach; ?>
                 </select>
-            </div>
-            <div class="form-group">
-                <label>Mata Pelajaran</label>
-                <input type="text" name="mata_pelajaran" id="edit_mata_pelajaran" class="form-control" required>
             </div>
             <div class="form-group">
                 <label>Nilai (0–100)</label>
@@ -187,6 +177,20 @@
 </div>
 
 <script>
+    const adminSiswaMap = <?= json_encode($siswaMap ?? []) ?>;
+
+    function adminAutoFill(siswaId, mode) {
+        if (!siswaId || !adminSiswaMap[siswaId]) return;
+        const map = adminSiswaMap[siswaId];
+        if (mode === 'add') {
+            document.getElementById('add_pengajar').value = map.pengajar_id ?? '';
+            document.getElementById('add_program').value  = map.program_id ?? '';
+        } else if (mode === 'edit') {
+            document.getElementById('edit_pengajar_id').value = map.pengajar_id ?? '';
+            document.getElementById('edit_program_id').value  = map.program_id ?? '';
+        }
+    }
+
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -195,7 +199,6 @@
         document.getElementById('edit_siswa_id').value    = data.siswa_id;
         document.getElementById('edit_pengajar_id').value = data.pengajar_id;
         document.getElementById('edit_program_id').value  = data.program_id;
-        document.getElementById('edit_mata_pelajaran').value = data.mata_pelajaran;
         document.getElementById('edit_nilai').value       = data.nilai;
         document.getElementById('edit_catatan').value     = data.catatan;
         document.getElementById('edit_tanggal').value     = data.tanggal;

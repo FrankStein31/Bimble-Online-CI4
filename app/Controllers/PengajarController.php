@@ -105,12 +105,14 @@ class PengajarController extends BaseController
     public function tambahHasil()
     {
         $pengajarId = session()->get('user_id');
+        $program_id = $this->request->getPost('program_id');
+        $program = $this->programModel->find($program_id);
 
         $data = [
             'siswa_id'       => $this->request->getPost('siswa_id'),
             'pengajar_id'    => $pengajarId,
-            'program_id'     => $this->request->getPost('program_id'),
-            'mata_pelajaran' => $this->request->getPost('mata_pelajaran'),
+            'program_id'     => $program_id,
+            'mata_pelajaran' => $program ? $program['nama_program'] : '',
             'nilai'          => $this->request->getPost('nilai'),
             'catatan'        => $this->request->getPost('catatan'),
             'tanggal'        => $this->request->getPost('tanggal'),
@@ -132,10 +134,13 @@ class PengajarController extends BaseController
             return redirect()->to('/pengajar/hasil-belajar')->with('error', 'Data tidak ditemukan.');
         }
 
+        $program_id = $this->request->getPost('program_id');
+        $program = $this->programModel->find($program_id);
+
         $data = [
             'siswa_id'       => $this->request->getPost('siswa_id'),
-            'program_id'     => $this->request->getPost('program_id'),
-            'mata_pelajaran' => $this->request->getPost('mata_pelajaran'),
+            'program_id'     => $program_id,
+            'mata_pelajaran' => $program ? $program['nama_program'] : '',
             'nilai'          => $this->request->getPost('nilai'),
             'catatan'        => $this->request->getPost('catatan'),
             'tanggal'        => $this->request->getPost('tanggal'),

@@ -41,7 +41,6 @@
                 <th>Tanggal</th>
                 <th>Nama Siswa</th>
                 <th>Program</th>
-                <th>Mata Pelajaran</th>
                 <th>Nilai</th>
                 <th>Catatan</th>
                 <th>Aksi</th>
@@ -61,7 +60,6 @@
                             <span class="badge badge-<?= $h['tingkat'] ?>"><?= $h['tingkat'] ?></span>
                             <small style="color:#718096;">Kls <?= $h['kelas'] ?></small>
                         </td>
-                        <td><?= esc($h['mata_pelajaran']) ?></td>
                         <td>
                             <?php if ($h['nilai'] !== null && $h['nilai'] !== ''): ?>
                                 <?php $n = (float)$h['nilai']; ?>
@@ -75,7 +73,7 @@
                         <td style="max-width:160px;font-size:.82rem;color:#718096;"><?= esc($h['catatan'] ?? '—') ?></td>
                         <td>
                             <div class="action-group">
-                                <button class="btn-icon edit" title="Edit" onclick='openEditModal(<?= $h["hasil_id"] ?>, <?= json_encode($h) ?>)'>✏️</button>
+                                <button class="btn-icon edit" title="Edit" onclick='openEditModalPengajar(<?= $h["hasil_id"] ?>, <?= json_encode($h) ?>)'>✏️</button>
                                 <a href="<?= base_url('pengajar/hasil-belajar/hapus/'.$h['hasil_id']) ?>"
                                    class="btn-icon del" title="Hapus"
                                    onclick="return confirm('Yakin hapus data ini?')">🗑️</a>
@@ -110,7 +108,7 @@
                     </div>
                     <div class="form-group">
                         <label>Program <span class="req">*</span></label>
-                        <select name="program_id" id="add_program" class="form-select" required>
+                        <select name="program_id" id="add_program" class="form-select" required style="pointer-events: none; background: #e2e8f0;">
                             <option value="">Pilih Program</option>
                             <?php foreach ($program as $p): ?>
                                 <option value="<?= $p['program_id'] ?>"><?= esc($p['nama_program']) ?> (<?= $p['tingkat'] ?> Kls <?= $p['kelas'] ?>)</option>
@@ -120,10 +118,6 @@
                     </div>
                 </div>
                 <div class="two-col">
-                    <div class="form-group">
-                        <label>Mata Pelajaran <span class="req">*</span></label>
-                        <input type="text" name="mata_pelajaran" class="form-control" placeholder="Matematika" required>
-                    </div>
                     <div class="form-group">
                         <label>Nilai <small style="color:#a0aec0;">(0–100, opsional)</small></label>
                         <input type="number" name="nilai" class="form-control" min="0" max="100" step="0.5" placeholder="85">
@@ -169,7 +163,7 @@
                     </div>
                     <div class="form-group">
                         <label>Program <span class="req">*</span></label>
-                        <select name="program_id" id="e_program" class="form-select" required>
+                        <select name="program_id" id="e_program" class="form-select" required style="pointer-events: none; background: #e2e8f0;">
                             <?php foreach ($program as $p): ?>
                                 <option value="<?= $p['program_id'] ?>"><?= esc($p['nama_program']) ?> (<?= $p['tingkat'] ?> Kls <?= $p['kelas'] ?>)</option>
                             <?php endforeach; ?>
@@ -177,10 +171,6 @@
                     </div>
                 </div>
                 <div class="two-col">
-                    <div class="form-group">
-                        <label>Mata Pelajaran <span class="req">*</span></label>
-                        <input type="text" name="mata_pelajaran" id="e_mapel" class="form-control" required>
-                    </div>
                     <div class="form-group">
                         <label>Nilai</label>
                         <input type="number" name="nilai" id="e_nilai" class="form-control" min="0" max="100" step="0.5">
@@ -228,11 +218,10 @@
     }
 
     // Override openEditModal dari layout untuk versi terpusat ini
-    function openEditModal(id, data) {
+    function openEditModalPengajar(id, data) {
         document.getElementById('editForm').action = '<?= base_url('pengajar/hasil-belajar/edit/') ?>' + id;
         document.getElementById('e_siswa').value   = data.siswa_id;
         document.getElementById('e_program').value = data.program_id;
-        document.getElementById('e_mapel').value   = data.mata_pelajaran;
         document.getElementById('e_nilai').value   = data.nilai ?? '';
         document.getElementById('e_tanggal').value = data.tanggal;
         document.getElementById('e_catatan').value = data.catatan ?? '';
