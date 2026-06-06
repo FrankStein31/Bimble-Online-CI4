@@ -1,4 +1,4 @@
-﻿<?= $this->extend('layouts/sidebar') ?>
+<?= $this->extend('layouts/sidebar') ?>
 <?= $this->section('content') ?>
 
 <style>
@@ -93,6 +93,7 @@
 </style>
 
 <?php
+date_default_timezone_set('Asia/Jakarta');
 $totalAll     = count($transaksi);
 $totalLunas   = count(array_filter($transaksi, fn($r) => $r['status'] === 'lunas'));
 $totalPending = count(array_filter($transaksi, fn($r) => $r['status'] === 'pending'));
@@ -128,6 +129,7 @@ $totalDitolak = count(array_filter($transaksi, fn($r) => $r['status'] === 'ditol
         <thead>
             <tr>
                 <th>#</th>
+                <th>Tanggal Transaksi</th>
                 <th>Siswa</th>
                 <th>Program</th>
                 <th>Pengajar</th>
@@ -135,7 +137,7 @@ $totalDitolak = count(array_filter($transaksi, fn($r) => $r['status'] === 'ditol
                 <th>Bukti</th>
                 <th>Status</th>
                 <th>Ubah Status</th>
-                <th>Aksi</th>
+                <th hidden>Aksi</th>
             </tr>
         </thead>
         <tbody id="transaksiBody">
@@ -147,6 +149,10 @@ $totalDitolak = count(array_filter($transaksi, fn($r) => $r['status'] === 'ditol
                 <?php foreach ($transaksi as $i => $row): ?>
                     <tr data-search="<?= strtolower($row['nama'] . ' ' . $row['nama_program'] . ' ' . $row['status']) ?>">
                         <td><?= $i + 1 ?></td>
+                        <td>
+                            <strong><?= date('d F Y', strtotime($row['created_at'])) ?></strong><br>
+                            <small style="color:#718096;"><?= date('H:i:s', strtotime($row['created_at'])) ?></small>
+                        </td>
                         <td>
                             <strong><?= esc($row['nama']) ?></strong><br>
                             <?php if (!empty($row['tingkat'])): ?>
@@ -211,7 +217,7 @@ $totalDitolak = count(array_filter($transaksi, fn($r) => $r['status'] === 'ditol
                                 </div>
                             <?php endif; ?>
                         </td>
-                        <td>
+                        <td hidden>
                             <div class="action-group">
                                 <button class="btn-icon btn-edit" title="Edit Detail"
                                     onclick="openEditModal(

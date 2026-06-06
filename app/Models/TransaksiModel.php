@@ -23,6 +23,7 @@ class TransaksiModel extends Model
         'status',
         'midtrans_order_id',
         'metode_bayar',
+        'created_at'
     ];
 
     // Dates
@@ -42,6 +43,29 @@ class TransaksiModel extends Model
 
     protected $validationMessages = [];
     protected $skipValidation = false;
+
+    protected $beforeInsert = ['setZonaWaktu'];
+    protected $beforeUpdate = ['setZonaWaktuUpdate'];
+
+    protected function setZonaWaktu(array $data)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $now = date('Y-m-d H:i:s');
+        $data['data']['created_at'] = $now;
+        if ($this->useTimestamps && $this->updatedField) {
+            $data['data'][$this->updatedField] = $now;
+        }
+        return $data;
+    }
+
+    protected function setZonaWaktuUpdate(array $data)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        if ($this->useTimestamps && $this->updatedField) {
+            $data['data'][$this->updatedField] = date('Y-m-d H:i:s');
+        }
+        return $data;
+    }
 
     // Relationship methods
     public function user()

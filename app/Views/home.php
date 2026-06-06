@@ -416,6 +416,44 @@
     </div>
 </section>
 
+<!-- Siswa Diterima PTN (Menggunakan Swiper) -->
+<section class="alumni">
+    <div class="container">
+        <h2>Siswa-Siswi Bimbel Harapan Yang Diterima PTN</h2>
+
+        <!-- Swiper container -->
+        <div class="swiper alumni-swiper">
+            <div class="swiper-wrapper">
+                <!-- Individual slides -->
+                <?php foreach ($siswa as $sw): ?>
+                    <div class="swiper-slide">
+                        <div class="person-card">
+                            <div class="photo">
+                                <img src="<?= base_url('uploads/siswa-ptn/' . $sw['photo']) ?>" />
+                            </div>
+                            <div class="info">
+                                <strong><?= $sw['nama_siswa'] ?></strong>
+                                <p><?= $sw['prodi'] ?> – <?= $sw['nama_kampus'] ?> (<?= $sw['tahun_diterima'] ?>)</p>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+
+
+
+                <!-- You can add more slides as needed -->
+            </div>
+
+            <!-- Navigation buttons -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+
+            <!-- Pagination dots -->
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+</section>
+
 <!-- Rincian Biaya -->
 <section class="pricing">
     <div class="container">
@@ -516,43 +554,7 @@
     </div>
 </section>
 
-<!-- Siswa Diterima PTN (Menggunakan Swiper) -->
-<section class="alumni">
-    <div class="container">
-        <h2>Siswa-Siswi Bimbel Harapan Yang Diterima PTN</h2>
 
-        <!-- Swiper container -->
-        <div class="swiper alumni-swiper">
-            <div class="swiper-wrapper">
-                <!-- Individual slides -->
-                <?php foreach ($siswa as $sw): ?>
-                    <div class="swiper-slide">
-                        <div class="person-card">
-                            <div class="photo">
-                                <img src="<?= base_url('uploads/siswa-ptn/' . $sw['photo']) ?>" />
-                            </div>
-                            <div class="info">
-                                <strong><?= $sw['nama_siswa'] ?></strong>
-                                <p><?= $sw['prodi'] ?> – <?= $sw['nama_kampus'] ?> (<?= $sw['tahun_diterima'] ?>)</p>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-
-
-
-                <!-- You can add more slides as needed -->
-            </div>
-
-            <!-- Navigation buttons -->
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
-
-            <!-- Pagination dots -->
-            <div class="swiper-pagination"></div>
-        </div>
-    </div>
-</section>
 
 
 
