@@ -17,19 +17,33 @@ class ProgramController extends ResourceController
         $this->jadwalModel  = new JadwalModel();
     }
 
-    public function index()
+    public function index($tingkat = null)
     {
         $data['program'] = $this->programModel->getWithJadwal();
+        
+        // Filter berdasarkan tingkat jika parameter diberikan
+        if (!empty($tingkat) && in_array(strtoupper($tingkat), ['SD', 'SMP', 'SMA'])) {
+            $data['program'] = array_filter($data['program'], function($p) use ($tingkat) {
+                return strtoupper($p['tingkat']) === strtoupper($tingkat);
+            });
+            $data['activeTingkat'] = strtoupper($tingkat);
+        } else {
+            $data['activeTingkat'] = null;
+        }
+        
         $data['jadwal']  = $this->jadwalModel->orderBy('hari', 'ASC')->orderBy('jam_mulai', 'ASC')->findAll();
         return view('admin/program', $data);
     }
 
     public function create()
     {
+        // Auto-detect tingkat dari POST atau dari URL (jika ada)
+        $tingkat = $this->request->getPost('tingkat');
+        
         $data = [
             'nama_program' => $this->request->getPost('program'),
             'durasi'       => $this->request->getPost('durasi'),
-            'tingkat'      => $this->request->getPost('tingkat'),
+            'tingkat'      => $tingkat,
             'kelas'        => $this->request->getPost('kelas'),
             'harga'        => $this->request->getPost('harga'),
             'keterangan'   => $this->request->getPost('keterangan'),
@@ -42,20 +56,23 @@ class ProgramController extends ResourceController
             $jadwalIds = $this->request->getPost('jadwal_id') ?? [];
             $this->programModel->saveJadwal((int) $programId, array_values((array) $jadwalIds));
 
-            return redirect()->to('/dashboard/program')
+            $redirectUrl = !empty($tingkat) ? '/dashboard/program/' . strtolower($tingkat) : '/dashboard/program';
+            return redirect()->to($redirectUrl)
                 ->with('success', 'Program berhasil ditambahkan.');
         }
 
-        return redirect()->to('/dashboard/program')
+        return redirect()->back()
             ->with('error', 'Terjadi kesalahan saat menambahkan program.');
     }
 
     public function edit($id = null)
     {
+        $tingkat = $this->request->getPost('tingkat');
+        
         $data = [
             'nama_program' => $this->request->getPost('program'),
             'durasi'       => $this->request->getPost('durasi'),
-            'tingkat'      => $this->request->getPost('tingkat'),
+            'tingkat'      => $tingkat,
             'kelas'        => $this->request->getPost('kelas'),
             'harga'        => $this->request->getPost('harga'),
             'keterangan'   => $this->request->getPost('keterangan'),
@@ -66,11 +83,12 @@ class ProgramController extends ResourceController
             $jadwalIds = $this->request->getPost('jadwal_id') ?? [];
             $this->programModel->saveJadwal((int) $id, array_values((array) $jadwalIds));
 
-            return redirect()->to('/dashboard/program')
+            $redirectUrl = !empty($tingkat) ? '/dashboard/program/' . strtolower($tingkat) : '/dashboard/program';
+            return redirect()->to($redirectUrl)
                 ->with('success', 'Program berhasil diperbarui.');
         }
 
-        return redirect()->to('/dashboard/program')
+        return redirect()->back()
             ->with('error', 'Terjadi kesalahan saat memperbarui program.');
     }
 

@@ -333,15 +333,41 @@ $countSMA   = count(array_filter($program, fn($p) => $p['tingkat'] === 'SMA'));
     <button class="btn-add" onclick="openModal('modal-add')">+ Tambah Program</button>
 </div>
 
+<!-- Submenu Tingkat -->
+<div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;padding:16px;background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.06);border:1px solid #e2e8f0;">
+    <a href="<?= base_url('/dashboard/program') ?>" style="<?= empty($activeTingkat) ? 'background:linear-gradient(135deg,#667eea,#764ba2);color:white;' : 'background:#f0f4f8;color:#4a5568;' ?>padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.9rem;text-decoration:none;transition:all 0.2s;border:1px solid <?= empty($activeTingkat) ? 'transparent' : '#cbd5e0' ?>;">
+        📚 Semua Program
+    </a>
+    <a href="<?= base_url('/dashboard/program/sd') ?>" style="<?= $activeTingkat==='SD' ? 'background:linear-gradient(135deg,#667eea,#764ba2);color:white;' : 'background:#f0f4f8;color:#4a5568;' ?>padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.9rem;text-decoration:none;transition:all 0.2s;border:1px solid <?= $activeTingkat==='SD' ? 'transparent' : '#cbd5e0' ?>;">
+        🎒 SD
+    </a>
+    <a href="<?= base_url('/dashboard/program/smp') ?>" style="<?= $activeTingkat==='SMP' ? 'background:linear-gradient(135deg,#667eea,#764ba2);color:white;' : 'background:#f0f4f8;color:#4a5568;' ?>padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.9rem;text-decoration:none;transition:all 0.2s;border:1px solid <?= $activeTingkat==='SMP' ? 'transparent' : '#cbd5e0' ?>;">
+        📖 SMP
+    </a>
+    <a href="<?= base_url('/dashboard/program/sma') ?>" style="<?= $activeTingkat==='SMA' ? 'background:linear-gradient(135deg,#667eea,#764ba2);color:white;' : 'background:#f0f4f8;color:#4a5568;' ?>padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.9rem;text-decoration:none;transition:all 0.2s;border:1px solid <?= $activeTingkat==='SMA' ? 'transparent' : '#cbd5e0' ?>;">
+        🎓 SMA
+    </a>
+</div>
+
 <div class="stats-row">
-    <div class="stat-card"><div class="num"><?= $countTotal ?></div><div class="lbl">Total Program</div></div>
-    <div class="stat-card"><div class="num"><?= $countSD ?></div><div class="lbl">Program SD</div></div>
-    <div class="stat-card"><div class="num"><?= $countSMP ?></div><div class="lbl">Program SMP</div></div>
-    <div class="stat-card"><div class="num"><?= $countSMA ?></div><div class="lbl">Program SMA</div></div>
+    <?php if (empty($activeTingkat)): ?>
+        <div class="stat-card"><div class="num"><?= $countTotal ?></div><div class="lbl">Total Program</div></div>
+        <div class="stat-card"><div class="num"><?= $countSD ?></div><div class="lbl">Program SD</div></div>
+        <div class="stat-card"><div class="num"><?= $countSMP ?></div><div class="lbl">Program SMP</div></div>
+        <div class="stat-card"><div class="num"><?= $countSMA ?></div><div class="lbl">Program SMA</div></div>
+    <?php elseif ($activeTingkat === 'SD'): ?>
+        <div class="stat-card"><div class="num"><?= $countTotal ?></div><div class="lbl">Program SD</div></div>
+    <?php elseif ($activeTingkat === 'SMP'): ?>
+        <div class="stat-card"><div class="num"><?= $countTotal ?></div><div class="lbl">Program SMP</div></div>
+    <?php elseif ($activeTingkat === 'SMA'): ?>
+        <div class="stat-card"><div class="num"><?= $countTotal ?></div><div class="lbl">Program SMA</div></div>
+    <?php endif; ?>
 </div>
 
 <div class="tbl-card">
-    <div class="tbl-card-header">�� Daftar Program</div>
+    <div class="tbl-card-header">
+        Daftar Program<?php if (!empty($activeTingkat)): ?> <?= $activeTingkat ?><?php endif; ?>
+    </div>
     <table>
         <thead>
             <tr>
@@ -436,12 +462,17 @@ $countSMA   = count(array_filter($program, fn($p) => $p['tingkat'] === 'SMA'));
                 <div class="form-row col3">
                     <div class="form-group">
                         <label>Tingkat <span style="color:#e53e3e">*</span></label>
-                        <select name="tingkat" class="form-select" required>
-                            <option value="">— Pilih —</option>
-                            <option value="SD"  <?= old('tingkat')==='SD'  ? 'selected':'' ?>>SD</option>
-                            <option value="SMP" <?= old('tingkat')==='SMP' ? 'selected':'' ?>>SMP</option>
-                            <option value="SMA" <?= old('tingkat')==='SMA' ? 'selected':'' ?>>SMA</option>
-                        </select>
+                        <?php if (!empty($activeTingkat)): ?>
+                            <input type="hidden" name="tingkat" value="<?= $activeTingkat ?>">
+                            <input type="text" class="form-control" value="<?= $activeTingkat ?>" disabled style="background:#f0f4f8;cursor:not-allowed;">
+                        <?php else: ?>
+                            <select name="tingkat" class="form-select" required>
+                                <option value="">— Pilih —</option>
+                                <option value="SD"  <?= old('tingkat')==='SD'  ? 'selected':'' ?>>SD</option>
+                                <option value="SMP" <?= old('tingkat')==='SMP' ? 'selected':'' ?>>SMP</option>
+                                <option value="SMA" <?= old('tingkat')==='SMA' ? 'selected':'' ?>>SMA</option>
+                            </select>
+                        <?php endif; ?>
                     </div>
                     <div class="form-group">
                         <label>Kelas <span style="color:#e53e3e">*</span></label>
@@ -493,12 +524,17 @@ $countSMA   = count(array_filter($program, fn($p) => $p['tingkat'] === 'SMA'));
                 <div class="form-row col3">
                     <div class="form-group">
                         <label>Tingkat <span style="color:#e53e3e">*</span></label>
-                        <select id="edit-tingkat" name="tingkat" class="form-select" required>
-                            <option value="">— Pilih —</option>
-                            <option value="SD">SD</option>
-                            <option value="SMP">SMP</option>
-                            <option value="SMA">SMA</option>
-                        </select>
+                        <?php if (!empty($activeTingkat)): ?>
+                            <input type="hidden" name="tingkat" id="edit-tingkat-hidden" value="">
+                            <input type="text" id="edit-tingkat-display" class="form-control" disabled style="background:#f0f4f8;cursor:not-allowed;">
+                        <?php else: ?>
+                            <select id="edit-tingkat" name="tingkat" class="form-select" required>
+                                <option value="">— Pilih —</option>
+                                <option value="SD">SD</option>
+                                <option value="SMP">SMP</option>
+                                <option value="SMA">SMA</option>
+                            </select>
+                        <?php endif; ?>
                     </div>
                     <div class="form-group">
                         <label>Kelas <span style="color:#e53e3e">*</span></label>
@@ -576,10 +612,23 @@ $countSMA   = count(array_filter($program, fn($p) => $p['tingkat'] === 'SMA'));
         document.getElementById('edit-kelas').value      = kelas;
         document.getElementById('edit-harga').value      = harga;
         document.getElementById('edit-keterangan').value = keterangan;
+        
+        // Handle tingkat - either fixed input atau dropdown
+        var tingkatHidden = document.getElementById('edit-tingkat-hidden');
+        var tingkatDisplay = document.getElementById('edit-tingkat-display');
         var tingkatSel = document.getElementById('edit-tingkat');
-        for (var i = 0; i < tingkatSel.options.length; i++) {
-            tingkatSel.options[i].selected = (tingkatSel.options[i].value === tingkat);
+        
+        if (tingkatHidden) {
+            // Fixed tingkat case
+            tingkatHidden.value = tingkat;
+            tingkatDisplay.value = tingkat;
+        } else {
+            // Dropdown case
+            for (var i = 0; i < tingkatSel.options.length; i++) {
+                tingkatSel.options[i].selected = (tingkatSel.options[i].value === tingkat);
+            }
         }
+        
         for (var n = 1; n <= 3; n++) {
             var sel = document.getElementById('edit-jadwal-' + n);
             var val = jadwalIds[n - 1] !== undefined ? String(jadwalIds[n - 1]) : '';

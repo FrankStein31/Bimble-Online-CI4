@@ -52,6 +52,7 @@ $routes->post('/midtrans/cancel', 'MidtransController::cancel');
 $routes->group('/dashboard', ['filter' => 'auth:admin'], function ($routes) {
     $routes->get('jadwal', 'JadwalController::index');
     $routes->get('program', 'ProgramController::index');
+    $routes->get('program/(:alpha)', 'ProgramController::index/$1');
     $routes->get('rekening', 'RekeningController::index');
     $routes->get('siswa-ptn', 'SiswaPtnController::index');
     $routes->get('transaksi', 'TransaksiController::transaksi');
@@ -87,6 +88,7 @@ $routes->group('rekening', ['filter' => 'auth:admin'], function ($routes) {
     $routes->post('update/(:num)', 'RekeningController::edit/$1');
     $routes->get('delete/(:num)', 'RekeningController::delete/$1');
 });
+// Routes CRUD untuk program
 $routes->group('program', ['filter' => 'auth:admin'], function ($routes) {
     $routes->post('add', 'ProgramController::create');
     $routes->post('update/(:num)', 'ProgramController::edit/$1');
