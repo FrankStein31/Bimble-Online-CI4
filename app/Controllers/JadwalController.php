@@ -20,12 +20,24 @@ class JadwalController extends ResourceController
 
     public function add()
     {
-        $data = [
-            'hari' => $this->request->getPost('hari'),
-            'jam_mulai' => $this->request->getPost('jam_mulai'),
-            'jam_selesai' => $this->request->getPost('jam_selesai'),
-        ];
+        $hari = $this->request->getPost('hari');
+        $jamMulai = $this->request->getPost('jam_mulai');
+        $jamSelesai = $this->request->getPost('jam_selesai');
 
+        // Validasi constraint jam untuk Senin-Jumat (13:00-18:00)
+        $hariSenin = in_array($hari, ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']);
+        if ($hariSenin) {
+            if ($jamMulai < '13:00' || $jamMulai > '18:00' || $jamSelesai < '13:00' || $jamSelesai > '18:00') {
+                return redirect()->to('/dashboard/jadwal')
+                    ->with('error', 'Untuk Senin-Jumat, jadwal hanya tersedia pukul 13:00-18:00.');
+            }
+        }
+
+        $data = [
+            'hari' => $hari,
+            'jam_mulai' => $jamMulai,
+            'jam_selesai' => $jamSelesai,
+        ];
 
         if ($this->jadwalModel->insert($data)) {
             return redirect()->to('/dashboard/jadwal')
@@ -34,15 +46,27 @@ class JadwalController extends ResourceController
             return redirect()->to('/dashboard/jadwal')
                 ->with('error', 'Terjadi kesalahan saat menambahkan jadwal.');
         }
-        return view('/dashboard/jadwal');
     }
 
     public function edit($id = null)
     {
+        $hari = $this->request->getPost('hari');
+        $jamMulai = $this->request->getPost('jam_mulai');
+        $jamSelesai = $this->request->getPost('jam_selesai');
+
+        // Validasi constraint jam untuk Senin-Jumat (13:00-18:00)
+        $hariSenin = in_array($hari, ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']);
+        if ($hariSenin) {
+            if ($jamMulai < '13:00' || $jamMulai > '18:00' || $jamSelesai < '13:00' || $jamSelesai > '18:00') {
+                return redirect()->to('/dashboard/jadwal')
+                    ->with('error', 'Untuk Senin-Jumat, jadwal hanya tersedia pukul 13:00-18:00.');
+            }
+        }
+
         $data = [
-            'hari' => $this->request->getPost('hari'),
-            'jam_mulai' => $this->request->getPost('jam_mulai'),
-            'jam_selesai' => $this->request->getPost('jam_selesai'),
+            'hari' => $hari,
+            'jam_mulai' => $jamMulai,
+            'jam_selesai' => $jamSelesai,
         ];
         if ($this->jadwalModel->update($id, $data)) {
             return redirect()->to('/dashboard/jadwal')

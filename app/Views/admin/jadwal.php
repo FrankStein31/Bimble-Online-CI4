@@ -224,7 +224,7 @@
 <?php endif; ?>
 
 <?php
-    $hariOrder = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+    $hariOrder = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
     $grouped   = array_fill_keys($hariOrder, []);
     foreach ($jadwal as $j) {
         $h = ucfirst(strtolower($j['hari']));
@@ -333,9 +333,9 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label>Hari <span class="req">*</span></label>
-                    <select name="hari" class="form-select" required>
+                    <select name="hari" id="add_hari" class="form-select" required onchange="updateJamConstraints('add')">
                         <option value="">— Pilih Hari —</option>
-                        <?php foreach (['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'] as $h): ?>
+                        <?php foreach (['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'] as $h): ?>
                             <option value="<?= $h ?>"><?= $h ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -343,11 +343,15 @@
                 <div class="time-row">
                     <div class="form-group">
                         <label>Jam Mulai <span class="req">*</span></label>
-                        <input type="time" name="jam_mulai" class="form-control" required>
+                        <select id="add_jam_mulai" name="jam_mulai" class="form-select" required>
+                            <option value="">— Pilih Jam —</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Jam Selesai <span class="req">*</span></label>
-                        <input type="time" name="jam_selesai" class="form-control" required>
+                        <select id="add_jam_selesai" name="jam_selesai" class="form-select" required>
+                            <option value="">— Pilih Jam —</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -371,8 +375,8 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label>Hari <span class="req">*</span></label>
-                    <select name="hari" id="edit_hari" class="form-select" required>
-                        <?php foreach (['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'] as $h): ?>
+                    <select name="hari" id="edit_hari" class="form-select" required onchange="updateJamConstraints('edit')">
+                        <?php foreach (['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'] as $h): ?>
                             <option value="<?= $h ?>"><?= $h ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -380,11 +384,15 @@
                 <div class="time-row">
                     <div class="form-group">
                         <label>Jam Mulai <span class="req">*</span></label>
-                        <input type="time" name="jam_mulai" id="edit_mulai" class="form-control" required>
+                        <select name="jam_mulai" id="edit_mulai" class="form-select" required>
+                            <option value="">— Pilih Jam —</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Jam Selesai <span class="req">*</span></label>
-                        <input type="time" name="jam_selesai" id="edit_selesai" class="form-control" required>
+                        <select name="jam_selesai" id="edit_selesai" class="form-select" required>
+                            <option value="">— Pilih Jam —</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -440,11 +448,15 @@
         }
     }
 
-    function openAddModal()  { document.getElementById('modalAdd').classList.add('active'); }
+    function openAddModal()  {
+        document.getElementById('modalAdd').classList.add('active');
+        updateJamConstraints('add');
+    }
 
     function openEditModal(id, hari, mulai, selesai) {
         document.getElementById('editForm').action    = '<?= base_url('jadwal/update/') ?>' + id;
         document.getElementById('edit_hari').value   = hari;
+        updateJamConstraints('edit');
         document.getElementById('edit_mulai').value  = mulai;
         document.getElementById('edit_selesai').value = selesai;
         document.getElementById('modalEdit').classList.add('active');
@@ -461,6 +473,10 @@
     document.querySelectorAll('.modal-overlay').forEach(o => {
         o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
     });
+
+    // Update constraints ketika hari berubah
+    document.getElementById('add_hari').addEventListener('change', () => updateJamConstraints('add'));
+    document.getElementById('edit_hari').addEventListener('change', () => updateJamConstraints('edit'));
 
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape')
@@ -485,6 +501,56 @@
                 group.querySelector('.chevron').classList.add('open');
             }
         });
+    }
+
+    function updateJamConstraints(mode) {
+        const hariSelect = mode === 'add' ? document.getElementById('add_hari') : document.getElementById('edit_hari');
+        const mulaiSelect = mode === 'add' ? document.getElementById('add_jam_mulai') : document.getElementById('edit_mulai');
+        const selesaiSelect = mode === 'add' ? document.getElementById('add_jam_selesai') : document.getElementById('edit_selesai');
+        
+        const hari = hariSelect.value;
+        const hariSenin = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].includes(hari);
+        
+        // Generate jam options
+        let jamList = [];
+        if (hariSenin) {
+            // Senin-Jumat: 13:00 - 18:00 (increment 30 menit)
+            for (let h = 13; h <= 18; h++) {
+                for (let m = 0; m < 60; m += 30) {
+                    if (h === 18 && m > 0) break; // Stop at 18:00
+                    jamList.push(String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'));
+                }
+            }
+        } else {
+            // Sabtu: 00:00 - 23:30
+            for (let h = 0; h < 24; h++) {
+                for (let m = 0; m < 60; m += 30) {
+                    jamList.push(String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'));
+                }
+            }
+        }
+        
+        // Update dropdown jam mulai
+        const mulaiValue = mulaiSelect.value;
+        mulaiSelect.innerHTML = '<option value="">— Pilih Jam —</option>';
+        jamList.forEach(jam => {
+            const option = document.createElement('option');
+            option.value = jam;
+            option.textContent = jam;
+            mulaiSelect.appendChild(option);
+        });
+        if (mulaiValue && jamList.includes(mulaiValue)) mulaiSelect.value = mulaiValue;
+        
+        // Update dropdown jam selesai
+        const selesaiValue = selesaiSelect.value;
+        selesaiSelect.innerHTML = '<option value="">— Pilih Jam —</option>';
+        jamList.forEach(jam => {
+            const option = document.createElement('option');
+            option.value = jam;
+            option.textContent = jam;
+            selesaiSelect.appendChild(option);
+        });
+        if (selesaiValue && jamList.includes(selesaiValue)) selesaiSelect.value = selesaiValue;
     }
 
     setTimeout(() => {
