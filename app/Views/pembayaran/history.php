@@ -419,7 +419,14 @@ tbody tr:nth-child(5) { animation-delay: 0.5s; }
                     <?php foreach ($transaksi as $i => $row): ?>
                         <tr>
                             <td style="color:#a0aec0;font-size:.8rem;"><?= $i + 1 ?></td>
-                            <td style="white-space:nowrap;font-weight:500;color:#2d3748;"><?= date('d/m/Y', strtotime($row['created_at'])) ?></td>
+                            <td style="white-space:nowrap;font-weight:500;color:#2d3748;">
+                                <?= date('d/m/Y', strtotime($row['created_at'])) ?>
+                                <?php if (!empty($row['updated_at']) && date('Y-m-d', strtotime($row['updated_at'])) !== date('Y-m-d', strtotime($row['created_at']))): ?>
+                                    <div style="font-size:.75rem; color:#10b981; margin-top:4px; font-weight:600;">
+                                        Diperpanjang: <?= date('d/m/Y', strtotime($row['updated_at'])) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
                             <td><strong><?= esc($row['nama_program']) ?></strong></td>
                             <td>
                                 <span style="display:inline-block;background:#eef2ff;color:#3730a3;border-radius:6px;padding:2px 8px;font-size:.75rem;font-weight:600;">
@@ -447,8 +454,24 @@ tbody tr:nth-child(5) { animation-delay: 0.5s; }
                             </td>
                             <td style="font-weight:600;color:#667eea;white-space:nowrap;">Rp <?= number_format($row['tagihan'], 0, ',', '.') ?></td>
                             <td>
-                                <?php if ($row['status'] === 'lunas'): ?>
+                                <?php 
+                                    $isLunas = $row['status'] === 'lunas';
+                                    $isExpired = false;
+                                    if ($isLunas) {
+                                        $waktuAktif = strtotime($row['updated_at'] ?? $row['created_at']);
+                                        $waktuBerakhir = strtotime('+1 month', $waktuAktif);
+                                        if (time() > $waktuBerakhir) {
+                                            $isExpired = true;
+                                        }
+                                    }
+                                ?>
+                                <?php if ($isLunas && !$isExpired): ?>
                                     <span class="status-pill pill-lunas">✓ Lunas</span>
+                                <?php elseif ($isLunas && $isExpired): ?>
+                                    <div style="display:flex; flex-direction:column; gap:6px;">
+                                        <span class="status-pill pill-ditolak">✗ Tidak Aktif</span>
+                                        <a href="<?= base_url('/registrasi-pembayaran/perpanjang/' . $row['transaksi_id']) ?>" style="font-size: .7rem; padding: 4px 8px; background: #10b981; color: white; border-radius: 6px; text-decoration: none; text-align: center;">🔄 Perpanjang</a>
+                                    </div>
                                 <?php elseif ($row['status'] === 'pending'): ?>
                                     <span class="status-pill pill-pending">⏳ Pending</span>
                                 <?php else: ?>

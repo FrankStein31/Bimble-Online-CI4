@@ -312,17 +312,39 @@ body {
                         </div>
                     <?php endif; ?>
 
+                    <div style="font-size:.8rem; color:#a0aec0; margin-bottom: 12px;">
+                        <span style="font-weight:600;">💳 Terakhir Bayar:</span> <?= !empty($paket['updated_at']) && date('Y-m-d', strtotime($paket['updated_at'])) !== date('Y-m-d', strtotime($paket['created_at'])) ? date('d M Y, H:i', strtotime($paket['updated_at'])) : date('d M Y, H:i', strtotime($paket['created_at'])) ?> WIB
+                    </div>
+
                     <div class="status-bar">
                         <div>
-                            <?php if ($paket['status'] === 'lunas'): ?>
+                            <?php 
+                                $isLunas = $paket['status'] === 'lunas';
+                                $isExpired = false;
+                                if ($isLunas) {
+                                    $waktuAktif = strtotime($paket['updated_at'] ?? $paket['created_at']);
+                                    $waktuBerakhir = strtotime('+1 month', $waktuAktif);
+                                    if (time() > $waktuBerakhir) {
+                                        $isExpired = true;
+                                    }
+                                }
+                            ?>
+                            <?php if ($isLunas && !$isExpired): ?>
                                 <span class="status-pill pill-lunas">✓ Aktif</span>
+                            <?php elseif ($isLunas && $isExpired): ?>
+                                <span class="status-pill pill-ditolak">✗ Tidak Aktif</span>
                             <?php elseif ($paket['status'] === 'pending'): ?>
                                 <span class="status-pill pill-pending">⏳ Menunggu Konfirmasi</span>
                             <?php else: ?>
                                 <span class="status-pill pill-ditolak">✗ Ditolak</span>
                             <?php endif; ?>
                         </div>
-                        <a href="<?= base_url('/registrasi-pembayaran/history') ?>" class="btn-detail">Lihat Detail →</a>
+                        <div style="display: flex; gap: 8px;">
+                            <?php if ($isLunas && $isExpired): ?>
+                                <a href="<?= base_url('/registrasi-pembayaran/perpanjang/' . $paket['transaksi_id']) ?>" class="btn-detail" style="background: #10b981; border-color: #10b981; color: white;">🔄 Perpanjang</a>
+                            <?php endif; ?>
+                            <a href="<?= base_url('/registrasi-pembayaran/history') ?>" class="btn-detail">Lihat Detail →</a>
+                        </div>
                     </div>
                 </div>
             </div>

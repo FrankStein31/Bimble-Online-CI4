@@ -37,6 +37,8 @@ $routes->group('', ['filter' => 'auth:siswa'], function ($routes) {
     $routes->get('/registrasi-pembayaran/paket-aktif', 'RegistrasiController::paketAktif');
     $routes->get('/registrasi-pembayaran/transfer-bank', 'RegistrasiController::transferBank');
     $routes->get('/registrasi-pembayaran/history', 'RegistrasiController::history');
+    $routes->get('/registrasi-pembayaran/perpanjang/(:num)', 'RegistrasiController::perpanjang/$1');
+    $routes->post('/registrasi-pembayaran/perpanjang-submit', 'RegistrasiController::submitPerpanjang');
     $routes->get('/rekap-belajar', 'RekkapBelajarController::index');
     // Midtrans: create token (AJAX, requires login)
     $routes->post('/midtrans/token', 'MidtransController::token');

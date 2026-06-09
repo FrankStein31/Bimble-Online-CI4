@@ -77,15 +77,25 @@ class RegistrasiController extends ResourceController
             return redirect()->back()->with('error', 'Program tidak sesuai dengan jenjang pendidikan Anda (' . $tingkatSiswa . ').');
         }
 
-        // Cek sudah terdaftar di program yang sama
+        // Cek sudah terdaftar di program yang sama dan masih aktif
         $existing = $this->transaksiModel
             ->where('user_id', session()->get('user_id'))
             ->where('program_id', $programId)
             ->whereIn('status', ['pending', 'lunas'])
+            ->orderBy('created_at', 'DESC')
             ->first();
 
         if ($existing) {
-            return redirect()->back()->with('error', 'Anda sudah terdaftar di program ini.');
+            if ($existing['status'] === 'pending') {
+                return redirect()->back()->with('error', 'Anda memiliki tagihan pending di program ini.');
+            }
+            if ($existing['status'] === 'lunas') {
+                $waktuAktif = strtotime($existing['updated_at'] ?? $existing['created_at']);
+                $waktuBerakhir = strtotime('+1 month', $waktuAktif);
+                if (time() <= $waktuBerakhir) {
+                    return redirect()->back()->with('error', 'Anda sudah terdaftar dan paket masih aktif di program ini.');
+                }
+            }
         }
 
         // Upload bukti pembayaran
@@ -108,6 +118,59 @@ class RegistrasiController extends ResourceController
 
         return redirect()->to(base_url('/registrasi-pembayaran/paket-aktif'))
             ->with('success', 'Registrasi pembayaran berhasil! Menunggu konfirmasi admin.');
+    }
+
+    public function perpanjang($id)
+    {
+        $userId = session()->get('user_id');
+        $transaksiLama = $this->transaksiModel->getTransaksiById($id);
+
+        if (!$transaksiLama || $transaksiLama['user_id'] != $userId) {
+            return redirect()->to(base_url('/registrasi-pembayaran/history'))->with('error', 'Transaksi tidak ditemukan.');
+        }
+
+        $data['transaksiLama'] = $transaksiLama;
+        $data['program']   = $this->programModel->where('program_id', $transaksiLama['program_id'])->findAll();
+        $data['rekening']  = $this->rekeningModel->findAll();
+
+        return view('pembayaran/perpanjang', $data);
+    }
+
+    public function submitPerpanjang()
+    {
+        $rules = [
+            'transaksi_lama_id' => 'required|numeric',
+            'tagihan'           => 'required|numeric',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->with('error', 'Mohon lengkapi semua field dengan benar.');
+        }
+
+        $lamaId = (int) $this->request->getPost('transaksi_lama_id');
+        $lama   = $this->transaksiModel->find($lamaId);
+
+        if (!$lama || $lama['user_id'] != session()->get('user_id')) {
+            return redirect()->back()->with('error', 'Data lama tidak ditemukan.');
+        }
+
+        // Upload bukti pembayaran
+        $bukti = $this->request->getFile('photo_bukti');
+        if (!$bukti || !$bukti->isValid()) {
+            return redirect()->back()->with('error', 'File bukti pembayaran tidak valid.');
+        }
+
+        $buktiName = $bukti->getRandomName();
+        $bukti->move(ROOTPATH . 'public/uploads/bukti_pembayaran', $buktiName);
+
+        $this->transaksiModel->update($lamaId, [
+            'photo_bukti'  => $buktiName,
+            'status'       => 'pending',
+            'metode_bayar' => 'manual',
+        ]);
+
+        return redirect()->to(base_url('/registrasi-pembayaran/paket-aktif'))
+            ->with('success', 'Perpanjangan paket berhasil! Menunggu konfirmasi admin.');
     }
 
     public function paketAktif()

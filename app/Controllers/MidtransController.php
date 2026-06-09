@@ -48,20 +48,31 @@ class MidtransController extends Controller
         $userId    = session()->get('user_id');
         $programId = (int) $this->request->getPost('program_id');
         $tagihan   = (int) $this->request->getPost('tagihan');
+        $lamaId    = (int) $this->request->getPost('transaksi_lama_id');
 
         if (!$userId || !$programId || !$tagihan) {
             return $this->response->setJSON(['error' => 'Data tidak lengkap.']);
         }
 
-        // Cek sudah terdaftar
+        // Cek sudah terdaftar dan masih aktif
         $existing = $this->transaksiModel
             ->where('user_id', $userId)
             ->where('program_id', $programId)
             ->whereIn('status', ['pending', 'lunas'])
+            ->orderBy('created_at', 'DESC')
             ->first();
 
         if ($existing) {
-            return $this->response->setJSON(['error' => 'Anda sudah terdaftar di program ini.']);
+            if ($existing['status'] === 'pending') {
+                return $this->response->setJSON(['error' => 'Anda memiliki tagihan pending di program ini.']);
+            }
+            if ($existing['status'] === 'lunas') {
+                $waktuAktif = strtotime($existing['updated_at'] ?? $existing['created_at']);
+                $waktuBerakhir = strtotime('+1 month', $waktuAktif);
+                if (time() <= $waktuBerakhir) {
+                    return $this->response->setJSON(['error' => 'Anda sudah terdaftar dan paket masih aktif di program ini.']);
+                }
+            }
         }
 
         $program = $this->programModel->find($programId);
@@ -72,16 +83,27 @@ class MidtransController extends Controller
         // Simpan transaksi sementara dengan status = pending & metode = midtrans
         $orderId = 'BIMBEL-' . $userId . '-' . $programId . '-' . time();
 
-        $transaksiId = $this->transaksiModel->insert([
-            'user_id'           => $userId,
-            'program_id'        => $programId,
-            'jadwal_id'         => null,
-            'tagihan'           => $tagihan,
-            'photo_bukti'       => null,
-            'status'            => 'pending',
-            'metode_bayar'      => 'midtrans',
-            'midtrans_order_id' => $orderId,
-        ], true); // true = return insert ID
+        if ($lamaId) {
+            $this->transaksiModel->update($lamaId, [
+                'status'            => 'pending',
+                'metode_bayar'      => 'midtrans',
+                'midtrans_order_id' => $orderId,
+            ]);
+            $transaksiId = $lamaId;
+        } else {
+            $transaksiId = $this->transaksiModel->insert([
+                'user_id'           => $userId,
+                'program_id'        => $programId,
+                'jadwal_id'         => null,
+                'kelas_id'          => null,
+                'pengajar_id'       => null,
+                'tagihan'           => $tagihan,
+                'photo_bukti'       => null,
+                'status'            => 'pending',
+                'metode_bayar'      => 'midtrans',
+                'midtrans_order_id' => $orderId,
+            ], true); // true = return insert ID
+        }
 
         // Build Snap payload
         $user = session()->get(); // has nama, email, nomor_hp
@@ -236,7 +258,13 @@ class MidtransController extends Controller
             $transaksi = $this->transaksiModel->find($transaksiId);
             // Only delete if still pending (not paid yet)
             if ($transaksi && $transaksi['status'] === 'pending' && $transaksi['metode_bayar'] === 'midtrans') {
-                $this->transaksiModel->delete($transaksiId);
+                if ($transaksi['kelas_id']) {
+                    // It's a renewal, just revert to lunas (which is expired)
+                    $this->transaksiModel->update($transaksiId, ['status' => 'lunas']);
+                } else {
+                    // It's a new registration, delete it
+                    $this->transaksiModel->delete($transaksiId);
+                }
             }
         }
 
