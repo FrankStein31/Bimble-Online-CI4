@@ -50,8 +50,29 @@ class PengajarController extends BaseController
     public function jadwal()
     {
         $pengajarId = session()->get('user_id');
-        $kelasList  = $this->kelasModel->getKelasByPengajar($pengajarId);
-        return view('pengajar/jadwal', ['kelasList' => $kelasList]);
+        
+        // Get filter parameters
+        $programId = $this->request->getGet('program_id');
+        
+        // Build filter array
+        $filters = [];
+        if (!empty($programId)) {
+            $filters['program_id'] = $programId;
+        }
+        
+        // Get data with filters
+        $kelasList = !empty($filters)
+            ? $this->kelasModel->getKelasByPengajarWithFilter($pengajarId, $filters)
+            : $this->kelasModel->getKelasByPengajar($pengajarId);
+        
+        // Get filter options
+        $programs = $this->kelasModel->getProgramsByPengajar($pengajarId);
+        
+        return view('pengajar/jadwal', [
+            'kelasList' => $kelasList,
+            'programs' => $programs,
+            'selectedProgram' => $programId,
+        ]);
     }
 
     public function siswa()

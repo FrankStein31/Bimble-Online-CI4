@@ -171,4 +171,72 @@ class KelasBimbelModel extends Model
 
         return $rows;
     }
+
+    /**
+     * Ambil semua kelas milik seorang pengajar dengan filter program dan tingkat.
+     */
+    public function getKelasByPengajarWithFilter(int $pengajarId, array $filters = []): array
+    {
+        $db = \Config\Database::connect();
+        $query = $this->select('kelas_bimbel.*, program_bimbel.nama_program, program_bimbel.tingkat, program_bimbel.kelas as kelas_program')
+            ->join('program_bimbel', 'program_bimbel.program_id = kelas_bimbel.program_id')
+            ->where('kelas_bimbel.pengajar_id', $pengajarId);
+
+        if (!empty($filters['program_id'])) {
+            $query->where('kelas_bimbel.program_id', $filters['program_id']);
+        }
+
+        if (!empty($filters['tingkat'])) {
+            $query->where('program_bimbel.tingkat', $filters['tingkat']);
+        }
+
+        $rows = $query->orderBy('kelas_bimbel.kelas_id', 'ASC')->findAll();
+
+        // Attach semua jadwal dari program_jadwal per kelas
+        foreach ($rows as &$row) {
+            $jadwalList = $db->table('program_jadwal pj')
+                ->select('j.jadwal_id, j.hari, j.jam_mulai, j.jam_selesai')
+                ->join('jadwal j', 'j.jadwal_id = pj.jadwal_id')
+                ->where('pj.program_id', $row['program_id'])
+                ->orderBy('pj.urutan', 'ASC')
+                ->get()->getResultArray();
+            $row['jadwal_list'] = $jadwalList;
+            // Backward-compat: isi hari/jam dari jadwal pertama
+            $row['hari']        = $jadwalList[0]['hari']        ?? null;
+            $row['jam_mulai']   = $jadwalList[0]['jam_mulai']   ?? null;
+            $row['jam_selesai'] = $jadwalList[0]['jam_selesai'] ?? null;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Ambil list program unik untuk pengajar tertentu.
+     */
+    public function getProgramsByPengajar(int $pengajarId): array
+    {
+        return $this->db->table('kelas_bimbel')
+            ->select('program_bimbel.program_id, program_bimbel.nama_program')
+            ->distinct()
+            ->join('program_bimbel', 'program_bimbel.program_id = kelas_bimbel.program_id')
+            ->where('kelas_bimbel.pengajar_id', $pengajarId)
+            ->orderBy('program_bimbel.nama_program', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Ambil list tingkat unik untuk pengajar tertentu.
+     */
+    public function getTingkatByPengajar(int $pengajarId): array
+    {
+        return $this->db->table('kelas_bimbel')
+            ->select('program_bimbel.tingkat')
+            ->distinct()
+            ->join('program_bimbel', 'program_bimbel.program_id = kelas_bimbel.program_id')
+            ->where('kelas_bimbel.pengajar_id', $pengajarId)
+            ->orderBy('program_bimbel.tingkat', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
 }

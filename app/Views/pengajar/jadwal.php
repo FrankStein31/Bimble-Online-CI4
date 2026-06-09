@@ -1,8 +1,136 @@
 <?= $this->extend('layouts/sidebar_pengajar') ?>
 <?= $this->section('content') ?>
 
+<style>
+.filter-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+}
+
+.filter-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.filter-group select {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #2d3748;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-group select:hover {
+    border-color: #a0aec0;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.btn-filter {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-filter-reset {
+    padding: 10px 20px;
+    background: #e2e8f0;
+    color: #4a5568;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-filter-reset:hover {
+    background: #cbd5e0;
+}
+</style>
+
 <div class="page-header">
     <h1>📅 Jadwal & Kelas Saya</h1>
+</div>
+
+<!-- Filter Section -->
+<div class="filter-section">
+    <div class="filter-title">Filter Data</div>
+    <form method="get" id="filter-form">
+        <div class="filter-controls">
+            <div class="filter-group">
+                <label for="program_id">Program</label>
+                <select name="program_id" id="program_id">
+                    <option value="">Semua Program</option>
+                    <?php if (!empty($programs)): ?>
+                        <?php foreach ($programs as $prog): ?>
+                            <option value="<?= $prog['program_id'] ?>" <?= ($selectedProgram == $prog['program_id']) ? 'selected' : '' ?>>
+                                <?= esc($prog['nama_program']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
+            </div>
+
+            <div class="filter-buttons">
+                <button type="submit" class="btn-filter">Filter</button>
+                <a href="<?= base_url('/pengajar/jadwal') ?>" class="btn-filter-reset">↻ Reset</a>
+            </div>
+        </div>
+    </form>
 </div>
 
 <?php
