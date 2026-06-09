@@ -78,4 +78,44 @@ class HasilBelajarModel extends Model
             ->orderBy('hasil_belajar.tanggal', 'DESC')
             ->findAll();
     }
+
+    public function getBySiswaWithFilter($siswaId, $filters = [])
+    {
+        $query = $this->select('hasil_belajar.*, pengajar.nama as nama_pengajar, program_bimbel.nama_program, program_bimbel.tingkat, program_bimbel.kelas, program_bimbel.program_id')
+            ->join('user as pengajar', 'pengajar.user_id = hasil_belajar.pengajar_id')
+            ->join('program_bimbel', 'program_bimbel.program_id = hasil_belajar.program_id')
+            ->where('hasil_belajar.siswa_id', $siswaId);
+
+        if (!empty($filters['program_id'])) {
+            $query->where('hasil_belajar.program_id', $filters['program_id']);
+        }
+
+        if (!empty($filters['pengajar_id'])) {
+            $query->where('hasil_belajar.pengajar_id', $filters['pengajar_id']);
+        }
+
+        return $query->orderBy('hasil_belajar.tanggal', 'DESC')->findAll();
+    }
+
+    public function getProgramBySiswa($siswaId)
+    {
+        return $this->db->table('hasil_belajar')
+            ->select('program_bimbel.program_id, program_bimbel.nama_program, program_bimbel.tingkat, program_bimbel.kelas')
+            ->distinct()
+            ->join('program_bimbel', 'program_bimbel.program_id = hasil_belajar.program_id')
+            ->where('hasil_belajar.siswa_id', $siswaId)
+            ->get()
+            ->getResultArray();
+    }
+
+    public function getPengajarBySiswa($siswaId)
+    {
+        return $this->db->table('hasil_belajar')
+            ->select('user.user_id, user.nama')
+            ->distinct()
+            ->join('user', 'user.user_id = hasil_belajar.pengajar_id')
+            ->where('hasil_belajar.siswa_id', $siswaId)
+            ->get()
+            ->getResultArray();
+    }
 }
