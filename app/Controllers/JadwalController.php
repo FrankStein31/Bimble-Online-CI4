@@ -129,18 +129,6 @@ class JadwalController extends ResourceController
 
         $db = \Config\Database::connect();
 
-        // Check if target teacher is full (all their kelas terisi >= kuota)
-        $kapasitas = $db->table('kelas_bimbel')
-            ->select('COALESCE(SUM(terisi),0) as total_terisi, COALESCE(SUM(kuota),0) as total_kuota')
-            ->where('pengajar_id', $pengajarId)
-            ->get()->getRowArray();
-        $totalTerisi = (int)($kapasitas['total_terisi'] ?? 0);
-        $totalKuota  = (int)($kapasitas['total_kuota'] ?? 0);
-        if ($totalKuota > 0 && $totalTerisi >= $totalKuota) {
-            return redirect()->to(base_url('dashboard/penugasan'))
-                ->with('error', 'Pengajar tersebut sudah full, tidak bisa dipindahkan ke sana.');
-        }
-
         $kelasModel = new \App\Models\KelasBimbelModel();
         $kelasModel->update($kelasId, ['pengajar_id' => $pengajarId]);
 
@@ -170,10 +158,6 @@ class JadwalController extends ResourceController
         if (!$target) {
             return redirect()->to(base_url('dashboard/penugasan'))
                 ->with('error', 'Kelas tujuan tidak ditemukan.');
-        }
-        if ($target['terisi'] >= $target['kuota']) {
-            return redirect()->to(base_url('dashboard/penugasan'))
-                ->with('error', 'Kelas tujuan sudah penuh (' . $target['terisi'] . '/' . $target['kuota'] . ').');
         }
 
         // Get the transaksi record to fetch pengajar_id of target kelas

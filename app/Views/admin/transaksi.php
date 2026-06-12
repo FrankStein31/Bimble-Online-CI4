@@ -469,6 +469,9 @@ const pengajarList = <?= json_encode($pengajar) ?>;
                         <option value="">— Pilih Pengajar —</option>
                     </select>
                     <small style="color:#718096;margin-top:4px;display:block;">Menampilkan pengajar sesuai jenjang program. Kelas baru akan otomatis dibuat jika pengajar belum memiliki kelas di program ini.</small>
+                    <div id="overbooking-warning" style="display:none;margin-top:8px;padding:8px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:7px;font-size:.82rem;color:#9a3412;">
+                        ⚠️ Pengajar ini sudah melebihi kuota. Overbooking diperbolehkan oleh admin.
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeModal('modal-plotting')">Batal</button>
@@ -554,15 +557,16 @@ const pengajarList = <?= json_encode($pengajar) ?>;
         pengajarList.forEach(function(p) {
             if ((p.jabatan || '').toUpperCase() !== tingkat) return;
             let label = p.nama;
-            const opt = new Option(label, p.user_id, false, false);
-
-            if (p.is_full == true || p.is_full == 1) {
-                label += ' (FULL — ' + p.total_terisi + '/' + p.total_kuota + ')';
-                $(opt).prop('disabled', true);
+            const t = parseInt(p.total_terisi);
+            const k = parseInt(p.total_kuota);
+            if (k > 0 && t > k) {
+                label += ' (OVER — ' + t + '/' + k + ')';
+            } else if (k > 0 && t === k) {
+                label += ' (FULL — ' + t + '/' + k + ')';
             } else {
-                label += ' (' + p.total_terisi + '/' + p.total_kuota + ')';
+                label += ' (' + t + '/' + k + ')';
             }
-            opt.textContent = label;
+            const opt = new Option(label, p.user_id, false, false);
             $select.append(opt);
         });
 
@@ -571,7 +575,24 @@ const pengajarList = <?= json_encode($pengajar) ?>;
             placeholder: '— Pilih Pengajar (' + tingkat + ') —',
             allowClear: true,
             width: '100%',
-            dropdownParent: $('#modal-plotting')
+            dropdownParent: $('#modal-plotting'),
+            templateResult: function(data) {
+                if (!data.id) return data.text;
+                const txt = data.text;
+                if (txt.includes('(OVER')) {
+                    return $('<span style="color:#b45309;font-weight:600;">' + txt + '</span>');
+                }
+                if (txt.includes('(FULL')) {
+                    return $('<span style="color:#166534;font-weight:600;">' + txt + '</span>');
+                }
+                return txt;
+            }
+        });
+
+        // Show/hide overbooking warning based on selection
+        $select.off('change.overbook').on('change.overbook', function() {
+            const selText = $(this).find('option:selected').text();
+            $('#overbooking-warning').toggle(selText.includes('(OVER'));
         });
 
         openModal('modal-plotting');

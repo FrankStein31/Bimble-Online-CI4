@@ -71,6 +71,9 @@
     /* Student popup trigger */
     .siswa-trigger { display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
     .siswa-trigger .siswa-count { font-weight:700; color:#2b6cb0; }
+    .siswa-trigger .siswa-count.over { color:#b45309; }
+    .siswa-over-badge { background:#fff7ed; color:#b45309; border:1px solid #fed7aa; border-radius:10px; padding:1px 7px; font-size:.68rem; font-weight:700; margin-left:2px; }
+    .siswa-full-badge { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; border-radius:10px; padding:1px 7px; font-size:.68rem; font-weight:700; margin-left:2px; }
     .siswa-trigger .siswa-info { background:#ebf4ff; color:#2b6cb0; border:none; border-radius:50%; width:20px; height:20px; font-size:.7rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all .15s; }
     .siswa-trigger .siswa-info:hover { background:#667eea; color:white; }
     .siswa-empty { color:#a0aec0; font-size:.85rem; }
@@ -171,11 +174,16 @@ $countSMA = count(array_filter($kelas, fn($k) => $k['tingkat'] === 'SMA'));
                         <td>
                             <?php if (!empty($k['siswa_list'])): ?>
                                 <div class="siswa-trigger" onclick='openSiswaModal(<?= json_encode($k['siswa_list'], JSON_HEX_APOS | JSON_HEX_QUOT) ?>, "<?= esc($k['nama_program'], 'js') ?>", <?= $k['kelas_id'] ?>, <?= $k['program_id'] ?>)'>
-                                    <span class="siswa-count"><?= $k['terisi'] ?></span> / <?= $k['kuota'] ?> Siswa
+                                    <span class="siswa-count <?= ($k['terisi'] > $k['kuota'] && $k['kuota'] > 0) ? 'over' : '' ?>"><?= $k['terisi'] ?></span> / <?= $k['kuota'] ?> Siswa
+                                    <?php if ($k['kuota'] > 0 && $k['terisi'] > $k['kuota']): ?>
+                                        <span class="siswa-over-badge">OVER</span>
+                                    <?php elseif ($k['kuota'] > 0 && $k['terisi'] == $k['kuota']): ?>
+                                        <span class="siswa-full-badge">FULL</span>
+                                    <?php endif; ?>
                                     <span class="siswa-info" title="Lihat daftar siswa">i</span>
                                 </div>
                             <?php else: ?>
-                                <span class="siswa-empty"><?= $k['terisi'] ?> / <?= $k['kuota'] ?> Siswa</span>
+                                                                <span class="siswa-empty"><?= $k['terisi'] ?> / <?= $k['kuota'] ?> Siswa<?php if ($k['kuota'] > 0 && $k['terisi'] > $k['kuota']): ?> <span class="siswa-over-badge">OVER</span><?php elseif ($k['kuota'] > 0 && $k['terisi'] == $k['kuota']): ?> <span class="siswa-full-badge">FULL</span><?php endif; ?></span>
                             <?php endif; ?>
                         </td>
                         <td>
@@ -347,16 +355,19 @@ $countSMA = count(array_filter($kelas, fn($k) => $k['tingkat'] === 'SMA'));
         pengajars.forEach(p => {
             if (p.jabatan === tingkat) {
                 let label = p.nama;
+                const t = parseInt(p.total_terisi);
+                const k = parseInt(p.total_kuota);
                 const opt = new Option(label, p.user_id, false, false);
 
                 if (p.user_id == currentPengajarId) {
                     label += ' (Pengajar Saat Ini)';
                     $(opt).prop('selected', true);
-                } else if (p.is_full == true || p.is_full == 1) {
-                    label += ' (FULL — ' + p.total_terisi + '/' + p.total_kuota + ')';
-                    $(opt).prop('disabled', true);
+                } else if (t > k) {
+                    label += ' (OVER — ' + t + '/' + k + ')';
+                } else if (t === k && k > 0) {
+                    label += ' (FULL — ' + t + '/' + k + ')';
                 } else {
-                    label += ' (' + p.total_terisi + '/' + p.total_kuota + ')';
+                    label += ' (' + t + '/' + k + ')';
                 }
                 opt.textContent = label;
                 $select.append(opt);
@@ -368,7 +379,18 @@ $countSMA = count(array_filter($kelas, fn($k) => $k['tingkat'] === 'SMA'));
             placeholder: '— Pilih Pengajar (' + tingkat + ') —',
             allowClear: true,
             width: '100%',
-            dropdownParent: $('#modal-reassign')
+            dropdownParent: $('#modal-reassign'),
+            templateResult: function(data) {
+                if (!data.id) return data.text;
+                const txt = data.text;
+                if (txt.includes('(OVER')) {
+                    return $('<span style="color:#b45309;font-weight:600;">' + txt + '</span>');
+                }
+                if (txt.includes('(FULL')) {
+                    return $('<span style="color:#166534;font-weight:600;">' + txt + '</span>');
+                }
+                return txt;
+            }
         });
 
         document.getElementById('modal-reassign').classList.add('active');
@@ -391,10 +413,13 @@ $countSMA = count(array_filter($kelas, fn($k) => $k['tingkat'] === 'SMA'));
 
         allKelas.forEach(k => {
             if (k.program_id == programId && k.kelas_id != fromKelasId) {
-                const isFull = parseInt(k.terisi) >= parseInt(k.kuota);
-                const label = k.nama_program + ' — ' + k.nama_kelas + ' (' + k.hari + ' ' + k.jam_mulai.substring(0,5) + ') [' + k.terisi + '/' + k.kuota + '] ' + (k.nama_pengajar ? '→ ' + k.nama_pengajar : '') + (isFull ? ' FULL' : '');
+                const t = parseInt(k.terisi);
+                const q = parseInt(k.kuota);
+                let capLabel = t + '/' + q;
+                if (q > 0 && t > q) capLabel = 'OVER — ' + t + '/' + q;
+                else if (q > 0 && t === q) capLabel = 'FULL — ' + t + '/' + q;
+                const label = k.nama_program + ' — ' + k.nama_kelas + ' (' + k.hari + ' ' + k.jam_mulai.substring(0,5) + ') [' + capLabel + '] ' + (k.nama_pengajar ? '→ ' + k.nama_pengajar : '');
                 const opt = new Option(label, k.kelas_id, false, false);
-                if (isFull) $(opt).prop('disabled', true);
                 select.appendChild(opt);
             }
         });
