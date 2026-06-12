@@ -35,6 +35,19 @@ class TransaksiController extends ResourceController
         $data['siswa']     = $this->userModel->where('role', 'siswa')->findAll();
         $data['program']   = $this->programBimbelModel->findAll();
         $data['jadwal']    = $this->jadwalModel->findAll();
+        // All pengajar for manual plotting modal
+        $data['pengajar']  = $this->userModel->where('role', 'pengajar')->findAll();
+
+        // Attach teacher capacity info for plotting modal
+        foreach ($data['pengajar'] as &$pgr) {
+            $kapasitas = $db->table('kelas_bimbel')
+                ->select('COALESCE(SUM(terisi),0) as total_terisi, COALESCE(SUM(kuota),0) as total_kuota')
+                ->where('pengajar_id', $pgr['user_id'])
+                ->get()->getRowArray();
+            $pgr['total_terisi'] = (int)($kapasitas['total_terisi'] ?? 0);
+            $pgr['total_kuota']  = (int)($kapasitas['total_kuota'] ?? 0);
+            $pgr['is_full']      = ($pgr['total_kuota'] > 0 && $pgr['total_terisi'] >= $pgr['total_kuota']);
+        }
 
         // Jadwal per program (untuk info di edit modal)
         $programJadwal = [];
@@ -287,6 +300,93 @@ class TransaksiController extends ResourceController
 
         // Tambah jumlah siswa di kelas
         $this->kelasModel->tambahTerisi($kelasId);
+    }
+
+    /**
+     * Manual plotting pengajar & kelas ke transaksi lunas yang belum ter-assign.
+     * Called from admin transaksi table when auto-assign found no available teacher.
+     */
+    public function plotting($id = null)
+    {
+        if (!$id) {
+            return redirect()->to(base_url('dashboard/transaksi'))->with('error', 'ID transaksi tidak ditemukan.');
+        }
+
+        $transaksi = $this->transaksiModel->find($id);
+        if (!$transaksi) {
+            return redirect()->to(base_url('dashboard/transaksi'))->with('error', 'Transaksi tidak ditemukan.');
+        }
+
+        if ($transaksi['status'] !== 'lunas') {
+            return redirect()->to(base_url('dashboard/transaksi'))->with('error', 'Plotting hanya bisa dilakukan untuk transaksi yang sudah lunas.');
+        }
+
+        $pengajarId = (int) $this->request->getPost('pengajar_id');
+        $pengajar   = $this->userModel->find($pengajarId);
+
+        if (!$pengajar || $pengajar['role'] !== 'pengajar') {
+            return redirect()->to(base_url('dashboard/transaksi'))->with('error', 'Pengajar tidak valid.');
+        }
+
+        // Ambil program & tingkat
+        $program = $this->programBimbelModel->find($transaksi['program_id']);
+        if (!$program) {
+            return redirect()->to(base_url('dashboard/transaksi'))->with('error', 'Program tidak ditemukan.');
+        }
+
+        $tingkat   = $program['tingkat'];
+        $programId = (int) $transaksi['program_id'];
+
+        // Resolve jadwal_id: use existing, or pick first from program_jadwal
+        $jadwalId = $transaksi['jadwal_id'] ? (int) $transaksi['jadwal_id'] : null;
+        if (!$jadwalId) {
+            $db = \Config\Database::connect();
+            $pj = $db->table('program_jadwal')
+                ->where('program_id', $programId)
+                ->orderBy('urutan', 'ASC')
+                ->get()->getRowArray();
+            if ($pj) {
+                $jadwalId = (int) $pj['jadwal_id'];
+            }
+        }
+
+        if (!$jadwalId) {
+            return redirect()->to(base_url('dashboard/transaksi'))->with('error', 'Program ini belum memiliki jadwal yang diatur.');
+        }
+
+        // Find existing kelas for this pengajar + program + jadwal
+        $kelas = $this->kelasModel
+            ->where('program_id', $programId)
+            ->where('jadwal_id', $jadwalId)
+            ->where('pengajar_id', $pengajarId)
+            ->first();
+
+        if ($kelas) {
+            $kelasId = (int) $kelas['kelas_id'];
+        } else {
+            // Create new kelas_bimbel for this pengajar
+            $this->kelasModel->insert([
+                'program_id'  => $programId,
+                'jadwal_id'   => $jadwalId,
+                'pengajar_id' => $pengajarId,
+                'kuota'       => 5,
+                'terisi'      => 0,
+            ]);
+            $kelasId = (int) $this->kelasModel->insertID();
+        }
+
+        // Update transaksi
+        $this->transaksiModel->update($id, [
+            'kelas_id'    => $kelasId,
+            'pengajar_id' => $pengajarId,
+            'jadwal_id'   => $jadwalId,
+        ]);
+
+        // Tambah terisi di kelas
+        $this->kelasModel->tambahTerisi($kelasId);
+
+        return redirect()->to(base_url('dashboard/transaksi'))
+            ->with('success', 'Plotting berhasil! ' . esc($pengajar['nama']) . ' telah di-assign ke ' . esc($program['nama_program']) . '.');
     }
 
     /**

@@ -266,22 +266,30 @@
 
         /* Add labels for each cell on mobile */
         td:nth-of-type(1):before {
-            content: "Nama";
+            content: "No";
         }
 
         td:nth-of-type(2):before {
-            content: "No. HP";
+            content: "Nama";
         }
 
         td:nth-of-type(3):before {
-            content: "Email";
+            content: "No. HP";
         }
 
         td:nth-of-type(4):before {
-            content: "Role";
+            content: "Email";
         }
 
         td:nth-of-type(5):before {
+            content: "Role";
+        }
+
+        td:nth-of-type(6):before {
+            content: "Jenjang";
+        }
+
+        td:nth-of-type(7):before {
             content: "Aksi";
         }
 
@@ -305,6 +313,42 @@
             width: 95%;
         }
     }
+    /* Tab bar */
+    .tab-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        padding: 8px 18px;
+        border: 2px solid #e0e0e0;
+        background: #fafafa;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+        color: #555;
+        transition: all .2s;
+    }
+    .tab-btn:hover { background: #f0f0f0; }
+    .tab-btn.active {
+        background: #4285f4;
+        color: #fff;
+        border-color: #4285f4;
+    }
+    .tab-count {
+        display: inline-block;
+        background: rgba(0,0,0,.12);
+        color: inherit;
+        font-size: 11px;
+        padding: 1px 7px;
+        border-radius: 10px;
+        margin-left: 4px;
+    }
+    .tab-btn.active .tab-count {
+        background: rgba(255,255,255,.3);
+    }
 </style>
 
 <section>
@@ -325,35 +369,37 @@
             </div>
         <?php endif; ?>
 
-        <div class="top-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <div class="filter-container" style="display: flex; gap: 10px; align-items: center;">
-                <label style="font-weight:bold; color:#555;">Filter Role:</label>
-                <select id="role-filter" class="form-select" style="width: auto; padding: 6px 12px; height: 35px; border-radius: 20px; outline:none;" onchange="filterTable()">
-                    <option value="semua">Semua</option>
-                    <option value="admin">Admin</option>
-                    <option value="pengajar">Guru/Pengajar</option>
-                    <option value="siswa">Siswa</option>
-                </select>
-            </div>
-            <a href="#add-modal" class="add-button">+ Tambah User</a>
-        </div>
-
         <?php
         $protectedAdminId = null;
+        $countSemua    = 0;
+        $countAdmin    = 0;
+        $countPengajar = 0;
+        $countSiswa    = 0;
         if (isset($user) && is_array($user)) {
+            $countSemua = count($user);
             foreach ($user as $u) {
-                if (strtolower($u['role']) === 'admin') {
-                    if ($protectedAdminId === null) {
-                        $protectedAdminId = $u['user_id'];
-                    }
-                }
+                $r = strtolower($u['role']);
+                if ($r === 'admin')    { $countAdmin++;    if ($protectedAdminId === null) $protectedAdminId = $u['user_id']; }
+                if ($r === 'pengajar')   $countPengajar++;
+                if ($r === 'siswa')      $countSiswa++;
             }
         }
         ?>
 
+        <div class="top-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="filterTab('semua', this)">Semua <span class="tab-count"><?= $countSemua ?></span></button>
+                <button class="tab-btn" onclick="filterTab('siswa', this)">🎓 Siswa <span class="tab-count"><?= $countSiswa ?></span></button>
+                <button class="tab-btn" onclick="filterTab('pengajar', this)">📚 Pengajar <span class="tab-count"><?= $countPengajar ?></span></button>
+                <button class="tab-btn" onclick="filterTab('admin', this)">🛡️ Admin <span class="tab-count"><?= $countAdmin ?></span></button>
+            </div>
+            <a href="#add-modal" class="add-button">+ Tambah User</a>
+        </div>
+
         <table id="user-table">
             <thead>
                 <tr>
+                    <th style="width:40px">No</th>
                     <th>Nama</th>
                     <th>No. HP</th>
                     <th>Email</th>
@@ -364,8 +410,9 @@
             </thead>
             <tbody>
                 <?php if (isset($user) && count($user) > 0): ?>
-                    <?php foreach ($user as $u): ?>
+                    <?php $no = 1; foreach ($user as $u): ?>
                         <tr data-role="<?= strtolower($u['role']) ?>">
+                            <td><?= $no++ ?></td>
                             <td><?= $u['nama'] ?></td>
                             <td><?= $u['nomor_hp'] ?></td>
                             <td><?= $u['email'] ?></td>
@@ -477,7 +524,7 @@
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr class="no-data">
-                        <td colspan="6" style="text-align: center;">Tidak ada data user</td>
+                        <td colspan="7" style="text-align: center;">Tidak ada data user</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -584,18 +631,21 @@
         toggleEdit();
     });
 
-    function filterTable() {
-        const role = document.getElementById('role-filter').value.toLowerCase();
+    let currentTab = 'semua';
+
+    function filterTab(role, btn) {
+        currentTab = role;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyFilter();
+    }
+
+    function applyFilter() {
         const rows = document.querySelectorAll('#user-table tbody tr');
-        
         rows.forEach(row => {
             if (row.classList.contains('no-data')) return;
             const rowRole = row.getAttribute('data-role');
-            if (role === 'semua' || rowRole === role) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+            row.style.display = (currentTab === 'semua' || rowRole === currentTab) ? '' : 'none';
         });
     }
 </script>

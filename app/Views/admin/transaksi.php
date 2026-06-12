@@ -1,6 +1,7 @@
 <?= $this->extend('layouts/sidebar') ?>
 <?= $this->section('content') ?>
 
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
     .page-header h1 { font-size:1.6rem; font-weight:700; color:#1a202c; margin:0; }
@@ -8,7 +9,9 @@
     .btn-add:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(102,126,234,.45); }
 
     .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:16px; margin-bottom:28px; }
-    .stat-card { background:white; border-radius:10px; padding:16px 20px; box-shadow:0 2px 10px rgba(0,0,0,.06); border:1px solid #e2e8f0; text-align:center; }
+    .stat-card { background:white; border-radius:10px; padding:16px 20px; box-shadow:0 2px 10px rgba(0,0,0,.06); border:2px solid #e2e8f0; text-align:center; cursor:pointer; transition:all .2s; }
+    .stat-card:hover { border-color:#667eea; box-shadow:0 4px 14px rgba(102,126,234,.15); transform:translateY(-2px); }
+    .stat-card.active { border-color:#667eea; background:linear-gradient(135deg,#eef2ff,#e8e0ff); box-shadow:0 4px 14px rgba(102,126,234,.2); }
     .stat-card .num { font-size:1.8rem; font-weight:700; color:#667eea; }
     .stat-card .lbl { font-size:.8rem; color:#718096; margin-top:2px; }
 
@@ -46,6 +49,10 @@
     .btn-ditolak:hover { background:#fca5a5; }
     .btn-pending { background:#fef3c7; color:#92400e; }
     .btn-pending:hover { background:#fcd34d; }
+
+    /* Plotting button */
+    .btn-plotting { background:#fef3c7; color:#92400e; border:none; border-radius:8px; padding:5px 12px; font-size:.78rem; font-weight:700; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; gap:4px; }
+    .btn-plotting:hover { background:#fcd34d; }
 
     /* Action group */
     .action-group { display:flex; gap:6px; }
@@ -90,6 +97,25 @@
 
     .empty-state { text-align:center; padding:48px; color:#a0aec0; }
     .empty-state .icon { font-size:2.5rem; margin-bottom:10px; }
+
+    /* Select2 overrides */
+    .select2-container--default .select2-selection--single {
+        height:38px; border:1px solid #d1d5db; border-radius:7px; padding:5px 12px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height:26px; color:#374151; font-size:.88rem; padding:0;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow { height:36px; }
+    .select2-dropdown { border-radius:8px; border-color:#d1d5db; box-shadow:0 4px 12px rgba(0,0,0,.1); z-index:1001; }
+    .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+        background:linear-gradient(135deg,#667eea,#764ba2);
+    }
+    .select2-results__option { padding:8px 12px; font-size:.88rem; }
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border:1px solid #d1d5db; border-radius:6px; padding:6px 10px; font-size:.85rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__placeholder { color:#a0aec0; }
+    .select2-container { width:100% !important; }
 </style>
 
 <?php
@@ -98,6 +124,7 @@ $totalAll     = count($transaksi);
 $totalLunas   = count(array_filter($transaksi, fn($r) => $r['status'] === 'lunas'));
 $totalPending = count(array_filter($transaksi, fn($r) => $r['status'] === 'pending'));
 $totalDitolak = count(array_filter($transaksi, fn($r) => $r['status'] === 'ditolak'));
+$totalBelumAssigned = count(array_filter($transaksi, fn($r) => $r['status'] === 'lunas' && empty($r['pengajar_id'])));
 ?>
 
 <?php if (session()->getFlashdata('success')): ?>
@@ -113,10 +140,11 @@ $totalDitolak = count(array_filter($transaksi, fn($r) => $r['status'] === 'ditol
 </div>
 
 <div class="stats-row">
-    <div class="stat-card"><div class="num"><?= $totalAll ?></div><div class="lbl">Total</div></div>
-    <div class="stat-card"><div class="num" style="color:#065f46"><?= $totalLunas ?></div><div class="lbl">Lunas</div></div>
-    <div class="stat-card"><div class="num" style="color:#92400e"><?= $totalPending ?></div><div class="lbl">Pending</div></div>
-    <div class="stat-card"><div class="num" style="color:#7f1d1d"><?= $totalDitolak ?></div><div class="lbl">Ditolak</div></div>
+    <div class="stat-card active" onclick="filterCard('all', this)"><div class="num"><?= $totalAll ?></div><div class="lbl">Total</div></div>
+    <div class="stat-card" onclick="filterCard('lunas', this)"><div class="num" style="color:#065f46"><?= $totalLunas ?></div><div class="lbl">Lunas</div></div>
+    <div class="stat-card" onclick="filterCard('pending', this)"><div class="num" style="color:#92400e"><?= $totalPending ?></div><div class="lbl">Pending</div></div>
+    <div class="stat-card" onclick="filterCard('ditolak', this)"><div class="num" style="color:#7f1d1d"><?= $totalDitolak ?></div><div class="lbl">Ditolak</div></div>
+    <div class="stat-card" onclick="filterCard('belum-plotting', this)"><div class="num" style="color:#b45309"><?= $totalBelumAssigned ?></div><div class="lbl">Belum Plotting</div></div>
 </div>
 
 <div class="search-bar">
@@ -147,7 +175,7 @@ $totalDitolak = count(array_filter($transaksi, fn($r) => $r['status'] === 'ditol
                 </td></tr>
             <?php else: ?>
                 <?php foreach ($transaksi as $i => $row): ?>
-                    <tr data-search="<?= strtolower($row['nama'] . ' ' . $row['nama_program'] . ' ' . $row['status']) ?>">
+                    <tr data-search="<?= strtolower($row['nama'] . ' ' . $row['nama_program'] . ' ' . $row['status']) ?>" data-status="<?= $row['status'] ?>" <?= ($row['status'] === 'lunas' && empty($row['pengajar_id'])) ? 'data-plotting="belum"' : '' ?>>
                         <td><?= $i + 1 ?></td>
                         <td>
                             <strong><?= date('d F Y', strtotime($row['created_at'])) ?></strong><br>
@@ -192,7 +220,16 @@ $totalDitolak = count(array_filter($transaksi, fn($r) => $r['status'] === 'ditol
                         </td>
                         <td>
                             <?php if ($row['status'] === 'lunas'): ?>
-                                <span style="color:#a0aec0;font-size:.78rem;">—</span>
+                                <?php if (empty($row['pengajar_id'])): ?>
+                                    <button class="btn-plotting" onclick="openPlottingModal(
+                                        <?= $row['transaksi_id'] ?>,
+                                        '<?= esc($row['nama'], 'js') ?>',
+                                        '<?= esc($row['nama_program'], 'js') ?>',
+                                        '<?= esc($row['tingkat_program'] ?? '', 'js') ?>'
+                                    )">🎯 Plotting</button>
+                                <?php else: ?>
+                                    <span style="color:#a0aec0;font-size:.78rem;">✅ Sudah plotted</span>
+                                <?php endif; ?>
                             <?php else: ?>
                                 <div class="status-actions">
                                     <form method="post" action="<?= base_url('transaksi/status/' . $row['transaksi_id']) ?>" style="display:inline">
@@ -251,6 +288,21 @@ foreach ($program as $p) {
 ?>
 <script>
 const programData = <?= json_encode($pjJson) ?>;
+
+<?php
+// Group pengajar by tingkat (jabatan) for plotting modal
+$pengajarByTingkat = ['SD' => [], 'SMP' => [], 'SMA' => []];
+foreach ($pengajar as $pgr) {
+    $j = strtoupper($pgr['jabatan'] ?? '');
+    if (isset($pengajarByTingkat[$j])) {
+        $pengajarByTingkat[$j][] = ['id' => (int)$pgr['user_id'], 'nama' => $pgr['nama']];
+    }
+}
+?>
+const pengajarByTingkat = <?= json_encode($pengajarByTingkat) ?>;
+
+// Build pengajar list with capacity for Select2
+const pengajarList = <?= json_encode($pengajar) ?>;
 </script>
 
 <!-- ADD MODAL -->
@@ -330,7 +382,7 @@ const programData = <?= json_encode($pjJson) ?>;
                 </div>
                 <div class="form-group">
                     <label>Program Bimbel</label>
-                    <select id="edit-program" name="program_id" class="form-select" required onchange="onEditProgramChange(this)">
+                    <select id="edit-program" name="program_id" class="form-select" required>
                         <option value="">— Pilih Program —</option>
                         <?php foreach ($program as $p): ?>
                             <option value="<?= $p['program_id'] ?>"><?= esc($p['nama_program']) ?> - <?= $p['tingkat'] ?> Kelas <?= $p['kelas'] ?></option>
@@ -393,6 +445,42 @@ const programData = <?= json_encode($pjJson) ?>;
     </div>
 </div>
 
+<!-- PLOTTING MODAL -->
+<div id="modal-plotting" class="modal-overlay">
+    <div class="modal-box sm">
+        <div class="modal-head" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+            <h3>🎯 Plotting Pengajar</h3>
+            <button class="modal-close" onclick="closeModal('modal-plotting')">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="form-plotting" action="" method="post">
+                <?= csrf_field() ?>
+                <div class="form-group">
+                    <label>Siswa</label>
+                    <div id="plotting-siswa" style="padding:8px 12px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:7px;font-size:.88rem;font-weight:600;color:#2d3748;">—</div>
+                </div>
+                <div class="form-group">
+                    <label>Program</label>
+                    <div id="plotting-program" style="padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;font-size:.88rem;font-weight:600;color:#1e40af;">—</div>
+                </div>
+                <div class="form-group">
+                    <label>Pilih Pengajar <span style="color:#e53e3e;">*</span></label>
+                    <select name="pengajar_id" id="plotting-pengajar" class="form-select" required>
+                        <option value="">— Pilih Pengajar —</option>
+                    </select>
+                    <small style="color:#718096;margin-top:4px;display:block;">Menampilkan pengajar sesuai jenjang program. Kelas baru akan otomatis dibuat jika pengajar belum memiliki kelas di program ini.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeModal('modal-plotting')">Batal</button>
+                    <button type="submit" class="btn-save">🎯 Assign Pengajar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     function openModal(id)  { document.getElementById(id).classList.add('active'); document.body.style.overflow='hidden'; }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow=''; }
@@ -404,7 +492,7 @@ const programData = <?= json_encode($pjJson) ?>;
     });
 
     // Add modal: auto-fill tagihan + show jadwal from program
-    document.getElementById('add-program-sel').addEventListener('change', function() {
+    $('#modal-add select[name="program_id"]').on('change', function() {
         const pid = this.value;
         const info = programData[pid];
         if (info) {
@@ -418,15 +506,18 @@ const programData = <?= json_encode($pjJson) ?>;
     });
 
     function onEditProgramChange(sel) {
-        const pid = sel.value;
+        const pid = sel.value || sel;
         const info = programData[pid];
         document.getElementById('edit-jadwal-info').textContent = info ? info.jadwal : '—';
     }
 
+    // Handle edit program change via Select2
+    $('#edit-program').on('change', function() { onEditProgramChange(this); });
+
     function openEditModal(id, userId, programId, tagihan, status) {
         document.getElementById('form-edit').action = '<?= base_url('transaksi/update/') ?>' + id;
-        document.getElementById('edit-user').value    = userId;
-        document.getElementById('edit-program').value = programId;
+        $('#edit-user').val(userId).trigger('change');
+        $('#edit-program').val(programId).trigger('change');
         document.getElementById('edit-tagihan').value = tagihan;
         document.getElementById('edit-status').value  = status;
         // Show jadwal info for current program
@@ -447,10 +538,87 @@ const programData = <?= json_encode($pjJson) ?>;
         openModal('modal-bukti');
     }
 
+    function openPlottingModal(transaksiId, namaSiswa, namaProgram, tingkat) {
+        document.getElementById('form-plotting').action = '<?= base_url('transaksi/plotting/') ?>' + transaksiId;
+        document.getElementById('plotting-siswa').textContent   = namaSiswa;
+        document.getElementById('plotting-program').textContent = namaProgram + ' (' + tingkat + ')';
+
+        const $select = $('#plotting-pengajar');
+
+        // Destroy previous Select2
+        if ($select.data('select2')) $select.select2('destroy');
+
+        // Populate options
+        $select.empty().append('<option value="">— Pilih Pengajar —</option>');
+
+        pengajarList.forEach(function(p) {
+            if ((p.jabatan || '').toUpperCase() !== tingkat) return;
+            let label = p.nama;
+            const opt = new Option(label, p.user_id, false, false);
+
+            if (p.is_full == true || p.is_full == 1) {
+                label += ' (FULL — ' + p.total_terisi + '/' + p.total_kuota + ')';
+                $(opt).prop('disabled', true);
+            } else {
+                label += ' (' + p.total_terisi + '/' + p.total_kuota + ')';
+            }
+            opt.textContent = label;
+            $select.append(opt);
+        });
+
+        // Init Select2
+        $select.select2({
+            placeholder: '— Pilih Pengajar (' + tingkat + ') —',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#modal-plotting')
+        });
+
+        openModal('modal-plotting');
+    }
+
+    // Init Select2 on add/edit modal dropdowns
+    $(document).ready(function() {
+        // Add modal
+        $('#modal-add select[name="user_id"]').select2({ placeholder:'— Pilih Siswa —', allowClear:true, dropdownParent:$('#modal-add') });
+        $('#modal-add select[name="program_id"]').select2({ placeholder:'— Pilih Program —', allowClear:true, dropdownParent:$('#modal-add') });
+
+        // Edit modal
+        $('#modal-edit select[name="user_id"]').select2({ placeholder:'— Pilih Siswa —', allowClear:true, dropdownParent:$('#modal-edit') });
+        $('#modal-edit select[name="program_id"]').select2({ placeholder:'— Pilih Program —', allowClear:true, dropdownParent:$('#modal-edit') });
+    });
+
+    let activeCard = 'all';
+
+    function filterCard(status, el) {
+        activeCard = status;
+        document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        applyFilter();
+    }
+
     function filterTable(q) {
-        q = q.toLowerCase().trim();
+        applyFilter();
+    }
+
+    function applyFilter() {
+        const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
         document.querySelectorAll('#transaksiBody tr').forEach(function(row) {
-            row.style.display = (!q || (row.dataset.search || '').includes(q)) ? '' : 'none';
+            const status = row.dataset.status || '';
+            const plotting = row.dataset.plotting || '';
+            const search = row.dataset.search || '';
+
+            // Card filter
+            let matchCard = true;
+            if (activeCard === 'lunas') matchCard = (status === 'lunas');
+            else if (activeCard === 'pending') matchCard = (status === 'pending');
+            else if (activeCard === 'ditolak') matchCard = (status === 'ditolak');
+            else if (activeCard === 'belum-plotting') matchCard = (plotting === 'belum');
+
+            // Search filter
+            const matchSearch = (!q || search.includes(q));
+
+            row.style.display = (matchCard && matchSearch) ? '' : 'none';
         });
     }
 

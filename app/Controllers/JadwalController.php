@@ -95,8 +95,29 @@ class JadwalController extends ResourceController
             ->orderBy('kelas_bimbel.kelas_id', 'DESC')
             ->get()->getResultArray();
 
+        // Attach student list per kelas (from transaksi where status=lunas)
+        foreach ($kelas as &$k) {
+            $k['siswa_list'] = $db->table('transaksi t')
+                ->select('t.transaksi_id, t.user_id, u.nama, u.nomor_hp')
+                ->join('user u', 'u.user_id = t.user_id')
+                ->where('t.kelas_id', $k['kelas_id'])
+                ->where('t.status', 'lunas')
+                ->get()->getResultArray();
+        }
+
         $userModel = new \App\Models\UserModel();
         $pengajar = $userModel->where('role', 'pengajar')->findAll();
+
+        // Attach teacher capacity info (total_terisi / total_kuota across all their kelas)
+        foreach ($pengajar as &$p) {
+            $kapasitas = $db->table('kelas_bimbel')
+                ->select('COALESCE(SUM(terisi),0) as total_terisi, COALESCE(SUM(kuota),0) as total_kuota')
+                ->where('pengajar_id', $p['user_id'])
+                ->get()->getRowArray();
+            $p['total_terisi'] = (int)($kapasitas['total_terisi'] ?? 0);
+            $p['total_kuota']  = (int)($kapasitas['total_kuota'] ?? 0);
+            $p['is_full'] = ($p['total_kuota'] > 0 && $p['total_terisi'] >= $p['total_kuota']);
+        }
 
         return view('admin/penugasan', ['kelas' => $kelas, 'pengajar' => $pengajar]);
     }
@@ -106,15 +127,70 @@ class JadwalController extends ResourceController
         $kelasId = $this->request->getPost('kelas_id');
         $pengajarId = $this->request->getPost('pengajar_id');
 
+        $db = \Config\Database::connect();
+
+        // Check if target teacher is full (all their kelas terisi >= kuota)
+        $kapasitas = $db->table('kelas_bimbel')
+            ->select('COALESCE(SUM(terisi),0) as total_terisi, COALESCE(SUM(kuota),0) as total_kuota')
+            ->where('pengajar_id', $pengajarId)
+            ->get()->getRowArray();
+        $totalTerisi = (int)($kapasitas['total_terisi'] ?? 0);
+        $totalKuota  = (int)($kapasitas['total_kuota'] ?? 0);
+        if ($totalKuota > 0 && $totalTerisi >= $totalKuota) {
+            return redirect()->to(base_url('dashboard/penugasan'))
+                ->with('error', 'Pengajar tersebut sudah full, tidak bisa dipindahkan ke sana.');
+        }
+
         $kelasModel = new \App\Models\KelasBimbelModel();
         $kelasModel->update($kelasId, ['pengajar_id' => $pengajarId]);
 
         // Update all transaksi that uses this kelas_id
-        $db = \Config\Database::connect();
         $db->table('transaksi')
            ->where('kelas_id', $kelasId)
            ->update(['pengajar_id' => $pengajarId]);
 
         return redirect()->to(base_url('dashboard/penugasan'))->with('success', 'Pengajar berhasil dipindahkan.');
+    }
+
+    public function transferSiswa()
+    {
+        $transaksiId = $this->request->getPost('transaksi_id');
+        $fromKelasId = $this->request->getPost('from_kelas_id');
+        $toKelasId   = $this->request->getPost('to_kelas_id');
+
+        if (!$transaksiId || !$fromKelasId || !$toKelasId || $fromKelasId == $toKelasId) {
+            return redirect()->to(base_url('dashboard/penugasan'))
+                ->with('error', 'Pilih kelas tujuan yang berbeda.');
+        }
+
+        $db = \Config\Database::connect();
+
+        // Check target class capacity
+        $target = $db->table('kelas_bimbel')->where('kelas_id', $toKelasId)->get()->getRowArray();
+        if (!$target) {
+            return redirect()->to(base_url('dashboard/penugasan'))
+                ->with('error', 'Kelas tujuan tidak ditemukan.');
+        }
+        if ($target['terisi'] >= $target['kuota']) {
+            return redirect()->to(base_url('dashboard/penugasan'))
+                ->with('error', 'Kelas tujuan sudah penuh (' . $target['terisi'] . '/' . $target['kuota'] . ').');
+        }
+
+        // Get the transaksi record to fetch pengajar_id of target kelas
+        $toPengajarId = $target['pengajar_id'];
+
+        // Move the student: update transaksi
+        $db->table('transaksi')->where('transaksi_id', $transaksiId)->update([
+            'kelas_id'    => $toKelasId,
+            'pengajar_id' => $toPengajarId,
+            'jadwal_id'   => $target['jadwal_id'],
+        ]);
+
+        // Decrement source class, increment target class
+        $db->table('kelas_bimbel')->where('kelas_id', $fromKelasId)->set('terisi', 'terisi - 1', false)->update();
+        $db->table('kelas_bimbel')->where('kelas_id', $toKelasId)->set('terisi', 'terisi + 1', false)->update();
+
+        return redirect()->to(base_url('dashboard/penugasan'))
+            ->with('success', 'Siswa berhasil dipindahkan ke kelas tujuan.');
     }
 }

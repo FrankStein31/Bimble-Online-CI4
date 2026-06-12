@@ -61,6 +61,7 @@ $routes->group('/dashboard', ['filter' => 'auth:admin'], function ($routes) {
     $routes->get('user', 'UserController::index');
     $routes->get('penugasan', 'JadwalController::penugasan');
     $routes->post('penugasan/reassign', 'JadwalController::reassign');
+    $routes->post('penugasan/transfer-siswa', 'JadwalController::transferSiswa');
     // Laporan = hasil belajar + cetak (menu tunggal, menggantikan hasil-belajar terpisah)
     $routes->get('laporan', 'LaporanController::index');
     $routes->get('laporan/cetak', 'LaporanController::cetak');
@@ -107,6 +108,7 @@ $routes->group('transaksi', ['filter' => 'auth:admin'], function ($routes) {
     $routes->post('add', 'TransaksiController::add');
     $routes->post('update/(:num)', 'TransaksiController::edit/$1');
     $routes->post('status/(:num)', 'TransaksiController::updateStatus/$1');
+    $routes->post('plotting/(:num)', 'TransaksiController::plotting/$1');
     $routes->get('delete/(:num)', 'TransaksiController::delete/$1');
 });
 

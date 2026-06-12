@@ -122,5 +122,9 @@ nb-configuration.xml
 # Visual Studio Code
 .vscode/
 
+# Qoder IDE
+.qoder/
+
 /results/
 /phpunit*.xml
+public/uploads/bukti_pembayaran/
