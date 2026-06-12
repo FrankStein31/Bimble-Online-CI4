@@ -1,5 +1,9 @@
 <?= $this->extend('layouts/navbar') ?>
 <?= $this->section('content') ?>
+
+<!-- Select2 CSS (loaded before <style> so overrides below take precedence) -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 <style>
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -121,6 +125,56 @@ select.f-input { appearance: none; -webkit-appearance: none; background-image: u
 .alert { padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: .875rem; font-weight: 500; }
 .alert-danger  { background: #fee2e2; color: #7f1d1d; border-left: 3px solid #ef4444; }
 .alert-success { background: #d1fae5; color: #065f46; border-left: 3px solid #10b981; }
+
+/* Select2 overrides */
+.select2-container--default .select2-selection--single {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    height: 44px;
+    padding: 6px 14px;
+    font-size: .9rem;
+    color: #2d3748;
+    background: white;
+    transition: border-color .2s;
+}
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default.select2-container--open .select2-selection--single {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,.1);
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 30px;
+    color: #2d3748;
+    padding-left: 0;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 42px;
+    right: 10px;
+}
+.select2-dropdown {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.12);
+    font-size: .9rem;
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #667eea;
+}
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: .875rem;
+}
+.select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    border-color: #667eea;
+    outline: none;
+}
+.select2-container--default .select2-selection--single .select2-selection__clear {
+    margin-right: 6px;
+    font-size: 1.1rem;
+    color: #a0aec0;
+}
 </style>
 
 <!-- Hero -->
@@ -176,8 +230,9 @@ select.f-input { appearance: none; -webkit-appearance: none; background-image: u
             </div>
             <div class="form-group">
                 <div class="field-label">Pilih Program Bimbel <span style="color:#e53e3e;">*</span></div>
-                <select id="program_id" class="f-input" required>
+                <select id="program_id" class="f-input select2-program" required style="width:100%;">
                     <option value="">-- Pilih Program --</option>
+                    <?php usort($program, fn($a, $b) => strcasecmp($a['nama_program'], $b['nama_program'])); ?>
                     <?php foreach ($program as $p): ?>
                         <option value="<?= $p['program_id'] ?>" data-harga="<?= (int)$p['harga'] ?>">
                             <?= esc($p['nama_program']) ?> — Kelas <?= esc($p['kelas']) ?>
@@ -261,15 +316,27 @@ select.f-input { appearance: none; -webkit-appearance: none; background-image: u
     </div>
 </div>
 
+<!-- jQuery + Select2 JS -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <!-- Midtrans Snap JS -->
 <script src="https://app.sandbox.midtrans.com/snap/snap.js"
         data-client-key="SB-Mid-client-CGmzPqJNEWcIRSj7"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Initialize Select2
+    $('.select2-program').select2({
+        placeholder: '-- Pilih Program --',
+        allowClear: true,
+        width: '100%',
+    });
+
     const programSelect = document.getElementById('program_id');
 
-    programSelect.addEventListener('change', function () {
+    // Use jQuery change event for Select2 compatibility
+    $('#program_id').on('change', function () {
         const opt   = programSelect.options[programSelect.selectedIndex];
         const harga = opt.value ? parseFloat(opt.getAttribute('data-harga') || 0) : '';
         const display = document.getElementById('tagihan_display');
